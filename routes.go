@@ -43,22 +43,18 @@ type Route struct {
 	Url  string
 	Name string
 
-	Func    Func
-	Methods []string
-
-	Cors *Cors
-
+	Func        Func
+	Methods     []string
+	Cors        *Cors
 	Schema      Schema
 	MapCtrl     MapCtrl
 	Middlewares Middlewares
 
-	router     *Router
-	simpleName string
-
+	router      *Router
+	simpleName  string
 	simpleUrl   string
 	urlRegex    []*regexp.Regexp
 	isUrlPrefix bool
-
 	parsed,
 	IsStatic bool
 	hasSufix bool
@@ -173,9 +169,9 @@ func (r *Route) parse() {
 	r.compileUrl()
 	r.compileMethods()
 	if r.Cors != nil {
-		r.Cors.AllowMethods = strings.Join(r.Methods, ", ")
+		r.Cors.AllowMethods = r.Methods
 	} else {
-		r.Cors = &Cors{AllowMethods: strings.Join(r.Methods, ", ")}
+		r.Cors = &Cors{AllowMethods: r.Methods}
 	}
 }
 

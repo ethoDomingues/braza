@@ -3,6 +3,7 @@ package braza
 import (
 	"net/http"
 	"net/textproto"
+	"strings"
 )
 
 type Header http.Header
@@ -44,9 +45,9 @@ func (h *Header) Save(w http.ResponseWriter) {
 type Cors struct {
 	MaxAge           string   // Access-Control-Max-Age
 	AllowOrigins     []string // Access-Control-Allow-Origin
-	AllowMethods     string   // Access-Control-Allow-Methods
-	AllowHeaders     string   // Access-Control-Allow-Headers
-	ExposeHeaders    string   // Access-Control-Expose-Headers
+	AllowMethods     []string // Access-Control-Allow-Methods
+	AllowHeaders     []string // Access-Control-Allow-Headers
+	ExposeHeaders    []string // Access-Control-Expose-Headers
 	RequestMethod    string   // Access-Control-Request-Method
 	AllowCredentials bool     // Access-Control-Allow-Credentials
 
@@ -64,10 +65,13 @@ func (c *Cors) parse(h Header, rq *Request) {
 		h.Set("Access-Control-Allow-Origin", o)
 	}
 	if len(c.AllowHeaders) > 0 {
-		h.Set("Access-Control-Allow-Headers", c.AllowHeaders)
+		h.Set("Access-Control-Allow-Headers", strings.Join(c.AllowHeaders, ", "))
+	}
+	if len(c.AllowMethods) > 0 {
+		h.Set("Access-Control-Allow-Methods", strings.Join(c.AllowMethods, ", "))
 	}
 	if len(c.ExposeHeaders) > 0 {
-		h.Set("Access-Control-Expose-Headers", c.ExposeHeaders)
+		h.Set("Access-Control-Expose-Headers", strings.Join(c.ExposeHeaders, ", "))
 	}
 	if c.RequestMethod != "" {
 		h.Set("Access-Control-Request-Method", c.RequestMethod)
@@ -78,20 +82,19 @@ func (c *Cors) parse(h Header, rq *Request) {
 }
 
 func (c *Cors) checkOrigin(origin string) string {
-	if origin == "" {
-		return origin
-	}
-	if len(c.AllowOrigins) != len(c.mapOrigins) {
-		c.mapOrigins = map[string]bool{}
-		for _, o := range c.AllowOrigins {
-			c.mapOrigins[o] = false
+	if origin != "" {
+		if len(c.AllowOrigins) != len(c.mapOrigins) {
+			c.mapOrigins = map[string]bool{}
+			for _, o := range c.AllowOrigins {
+				c.mapOrigins[o] = false
+			}
 		}
-	}
-	if _, ok := c.mapOrigins["*"]; ok {
-		return origin
-	}
-	if _, ok := c.mapOrigins[origin]; ok {
-		return origin
+		if _, ok := c.mapOrigins["*"]; ok {
+			return origin
+		}
+		if _, ok := c.mapOrigins[origin]; ok {
+			return origin
+		}
 	}
 	return ""
 }

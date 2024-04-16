@@ -58,6 +58,7 @@ func (r *Response) parseHeaders() {
 		routerCors.parse(r.Headers, ctx.Request)
 	}
 	routeCors := ctx.MatchInfo.Route.Cors
+
 	h := r.Headers
 	if routeCors != nil {
 		routeCors.parse(r.Headers, ctx.Request)
@@ -72,7 +73,7 @@ func (r *Response) parseHeaders() {
 			h.Set("Access-Control-Allow-Origin", ctx.App.Servername)
 		}
 		if _, ok := h["Access-Control-Allow-Headers"]; !ok {
-			h.Set("Access-Control-Allow-Headers", "")
+			h.Set("Access-Control-Allow-Headers", "content-type")
 		}
 		if _, ok := h["Access-Control-Expose-Headers"]; !ok {
 			h.Set("Access-Control-Expose-Headers", "")
@@ -90,12 +91,10 @@ func (r *Response) textCode(body any, code int) {
 	if statusText == "" {
 		panic(fmt.Errorf("unknown status code:'%d'", code))
 	}
-
 	r.StatusCode = code
 	if body == nil {
 		body = fmt.Sprintf("%d %s", code, statusText)
 	}
-
 	r.Headers.Set("Content-Type", "text/html")
 	fmt.Fprint(r, body)
 	panic(fmt.Errorf("abort:%d", code))
@@ -109,7 +108,7 @@ func (r *Response) Redirect(url string) {
 
 	r.Headers.Set("Content-Type", "text/html; charset=utf-8")
 	r.WriteString("<a href=\"" + c3po.HtmlEscape(url) + "\"> Manual Redirect </a>.\n")
-	panic("ok")
+	panic("")
 }
 
 func (r *Response) JSON(body any, code int) {
@@ -118,17 +117,17 @@ func (r *Response) JSON(body any, code int) {
 	r.Headers.Set("Content-Type", "application/json")
 	if b, ok := body.(string); ok {
 		r.WriteString(b)
-		panic("ok")
+		panic("")
 	} else if b, ok := body.(error); ok {
 		r.WriteString(b.Error())
-		panic("ok")
+		panic("")
 	}
-	if j, err := json.Marshal(body); err != nil {
+	j, err := json.Marshal(body)
+	if err != nil {
 		panic(err)
-	} else {
-		r.Write(j)
-		panic("ok")
 	}
+	r.Write(j)
+	panic("")
 }
 
 func (r *Response) TEXT(body any, code int) {
@@ -136,7 +135,7 @@ func (r *Response) TEXT(body any, code int) {
 	r.StatusCode = code
 	r.Headers.Set("Content-Type", "text/plain")
 	r._write(body)
-	panic("ok")
+	panic("")
 }
 
 func (r *Response) HTML(body any, code int) {
@@ -144,11 +143,11 @@ func (r *Response) HTML(body any, code int) {
 	r.StatusCode = code
 	r.Headers.Set("Content-Type", "text/html")
 	r._write(body)
-	panic("ok")
+	panic("")
 }
 
 func (r *Response) Abort(code int)       { r.textCode(nil, code) }
-func (r *Response) Close()               { panic("ok") }
+func (r *Response) Close()               { panic("") }
 func (r *Response) Ok()                  { r.textCode(nil, 200) }
 func (r *Response) Created()             { r.textCode(nil, 201) }
 func (r *Response) NoContent()           { r.textCode(nil, 204) }
@@ -199,7 +198,7 @@ func (r *Response) CheckErr(err error) {
 	if err != nil {
 		l.err.Println(err)
 		if r.ctx.App.Env == "development" {
-			r.HTML(err, 500)
+			r.TEXT(err, 500)
 		}
 		r.InternalServerError()
 	}

@@ -40,6 +40,10 @@ func (s *Session) validate(c *http.Cookie, secret string) {
 
 // This inserts a value into the session
 func (s *Session) Set(key, value string) {
+	if s.jwt.Secret == "" && len(s.jwt.Payload) > 0 {
+		l.info.Println("You are trying to use session without adding a secretKet. skipping this session")
+		return
+	}
 	s.jwt.Payload[key] = value
 	s.changed = true
 }

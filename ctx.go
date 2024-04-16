@@ -1,19 +1,23 @@
 package braza
 
 import (
+	"net/http"
 	"slices"
 
 	"github.com/ethoDomingues/c3po"
 )
 
 // Returns a new *braza.Ctx
-func newCtx(app *App) *Ctx {
-	return &Ctx{
+func newCtx(app *App, wr http.ResponseWriter, rq *http.Request) *Ctx {
+	ctx := &Ctx{
 		App:       app,
 		Global:    map[string]any{},
 		MatchInfo: &MatchInfo{},
 		Session:   newSession(app.SecretKey),
 	}
+	ctx.Request = NewRequest(rq, ctx)
+	ctx.Response = NewResponse(wr, ctx)
+	return ctx
 }
 
 type Ctx struct {
@@ -31,15 +35,15 @@ type Ctx struct {
 	// Contains information about the current request, route, etc...
 	MatchInfo *MatchInfo
 
-	mids  Middlewares
-	c_mid int
+	mids       Middlewares
+	midCounter int
 }
 
 // executes the next middleware or main function of the request
 func (ctx *Ctx) Next() {
-	if ctx.c_mid < len(ctx.mids) {
-		n := ctx.mids[ctx.c_mid]
-		ctx.c_mid += 1
+	if ctx.midCounter < len(ctx.mids) {
+		n := ctx.mids[ctx.midCounter]
+		ctx.midCounter += 1
 		n(ctx)
 	} else {
 		panic(ErrHttpAbort)

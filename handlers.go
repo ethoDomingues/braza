@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func serveFileHandler(ctx *Ctx) {
@@ -37,11 +38,10 @@ func optionsHandler(ctx *Ctx) {
 	rsp := ctx.Response
 	mi := ctx.MatchInfo
 	rsp.StatusCode = 200
-	strMeths := mi.Route.Cors.AllowMethods
+	strMeths := strings.Join(mi.Route.Cors.AllowMethods, ", ")
 	if rsp.Headers.Get("Access-Control-Allow-Methods") == "" {
 		rsp.Headers.Set("Access-Control-Allow-Methods", strMeths)
 	}
-
 	rsp.parseHeaders()
 	rsp.Headers.Save(rsp.raw)
 }

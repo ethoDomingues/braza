@@ -1,5 +1,8 @@
 # braza
 
+
+![gopher: go build](https://raw.githubusercontent.com/ashleymcnamara/gophers/master/GO_BUILD.png)
+
 ## [See the Documentation](https://github.com/ethoDomingues/braza/blob/main/docs/doc.md)
 
 ## Features

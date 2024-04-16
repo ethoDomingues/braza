@@ -323,12 +323,62 @@ func (app *App) ListenTLS(certFile, certKey string, host ...string) (err error) 
 
  */
 
+func (app *App) match(ctx *Ctx) bool {
+	rq := ctx.Request
+
+	if app.Servername != "" {
+		rqUrl := rq.URL.Host
+		if net.ParseIP(rqUrl) != nil {
+			return false
+		}
+		if !strings.Contains(rqUrl, app.Servername) {
+			return false
+		}
+	}
+
+	for _, router := range app.routers {
+		if router.match(ctx) {
+			if router.StrictSlash && !strings.HasSuffix(rq.URL.Path, "/") {
+				args := []string{}
+				for k, v := range rq.Args {
+					args = append(args, k, v)
+				}
+				ctx.Response.Redirect(ctx.UrlFor(ctx.MatchInfo.Route.Name, true, args...))
+			}
+			return true
+		}
+	}
+	mi := ctx.MatchInfo
+	if mi.MethodNotAllowed != nil {
+		ctx.MethodNotAllowed()
+	} else {
+		ctx.NotFound()
+	}
+	return false
+}
+
+// exec route and handle errors of application
+func (app *App) execRoute(ctx *Ctx) {
+	rq := ctx.Request
+	mi := ctx.MatchInfo
+	if mi.Func == nil && rq.Method == "OPTIONS" {
+		optionsHandler(ctx)
+	} else {
+		rq.parse()
+		ctx.parseMids()
+		if app.BeforeRequest != nil {
+			app.BeforeRequest(ctx)
+		}
+		ctx.Next()
+	}
+}
+
 func (app *App) execHandlerError(ctx *Ctx) {
 	err := recover()
 	if err != nil {
 		var errStr string
 		if s, ok := err.(string); ok {
-			if s == "ok" {
+			if s == "" {
 				return
 			}
 			errStr = s
@@ -356,6 +406,12 @@ func (app *App) execHandlerError(ctx *Ctx) {
 				panic(errStr)
 			}
 		}
+	}
+}
+
+func execTeardown(ctx *Ctx) {
+	if ctx.App.TearDownRequest != nil {
+		go ctx.App.TearDownRequest(ctx)
 	}
 }
 
@@ -394,67 +450,9 @@ func (app *App) closeConn(ctx *Ctx) {
 	}
 }
 
-func execTeardown(ctx *Ctx) {
-	if ctx.App.TearDownRequest != nil {
-		go ctx.App.TearDownRequest(ctx)
-	}
-}
-
-// exec route and handle errors of application
-func (app *App) execRoute(ctx *Ctx) {
-	rq := ctx.Request
-	mi := ctx.MatchInfo
-	if mi.Func == nil && rq.Method == "OPTIONS" {
-		optionsHandler(ctx)
-	} else {
-		rq.parse()
-		ctx.parseMids()
-		if app.BeforeRequest != nil {
-			app.BeforeRequest(ctx)
-		}
-		ctx.Next()
-	}
-}
-
-func (app *App) match(ctx *Ctx) bool {
-	rq := ctx.Request
-
-	if app.Servername != "" {
-		rqUrl := rq.URL.Host
-		if net.ParseIP(rqUrl) != nil {
-			return false
-		}
-		if !strings.Contains(rqUrl, app.Servername) {
-			return false
-		}
-	}
-
-	for _, router := range app.routers {
-		if router.match(ctx) {
-			if router.StrictSlash && !strings.HasSuffix(rq.URL.Path, "/") {
-				args := []string{}
-				for k, v := range rq.Args {
-					args = append(args, k, v)
-				}
-				ctx.Response.Redirect(ctx.UrlFor(ctx.MatchInfo.Route.Name, true, args...))
-			}
-			return true
-		}
-	}
-	mi := ctx.MatchInfo
-	if mi.MethodNotAllowed != nil {
-		ctx.MethodNotAllowed()
-	} else {
-		ctx.NotFound()
-	}
-	return false
-}
-
 // # http.Handler
 func (app *App) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
-	ctx := newCtx(app.Clone())
-	ctx.Request = NewRequest(req, ctx)
-	ctx.Response = NewResponse(wr, ctx)
+	ctx := newCtx(app.Clone(), wr, req)
 	defer app.closeConn(ctx)
 	defer app.execHandlerError(ctx)
 	if app.match(ctx) {
