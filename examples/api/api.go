@@ -122,7 +122,7 @@ type DeletePostSchema struct {
 func deletePost(ctx *braza.Ctx) {
 	sch := ctx.Schema.(*DeletePostSchema)
 	db := ctx.Global["db"].(map[string]*Post)
-	if _, ok := db[sch.PostID]; !ok {
+	if _, ok := db[sch.PostID]; ok {
 		delete(db, sch.PostID)
 		ctx.NoContent()
 	}
