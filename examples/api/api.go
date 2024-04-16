@@ -40,6 +40,17 @@ var apiRoutes = []*braza.Route{
 			},
 		},
 	},
+	// likes => /posts/{postID}/likes
+	{
+		Name: "likes",
+		Url:  "/posts/{postID}/likes",
+		MapCtrl: braza.MapCtrl{
+			"POST": &braza.Meth{
+				Func:   postLikes,
+				Schema: &GetPostSchema{},
+			},
+		},
+	},
 }
 
 func getApiRouter() *braza.Router {
@@ -104,10 +115,11 @@ func putPost(ctx *braza.Ctx) {
 	db := ctx.Global["db"].(map[string]*Post)
 	sch := ctx.Schema.(PutPostSchema)
 	id := sch.PostID
-	if _, ok := db[id]; ok {
+	if pOld, ok := db[id]; ok {
 		post := &Post{
-			ID:   id,
-			Text: sch.Text,
+			ID:    id,
+			Text:  sch.Text,
+			Likes: pOld.Likes,
 		}
 		db[id] = post
 		ctx.JSON(post, 200)
@@ -126,5 +138,18 @@ func deletePost(ctx *braza.Ctx) {
 		delete(db, sch.PostID)
 		ctx.NoContent()
 	}
+	ctx.NotFound()
+}
+
+func postLikes(ctx *braza.Ctx) {
+	sch := ctx.Schema.(*GetPostSchema)
+	db := ctx.Global["db"].(map[string]*Post)
+	if post, ok := db[sch.PostID]; ok {
+		post.Likes++
+		db[sch.PostID] = post
+		ctx.JSON(post, 201)
+	}
+	fmt.Println(sch.PostID)
+	fmt.Println(db)
 	ctx.NotFound()
 }

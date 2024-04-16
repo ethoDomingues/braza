@@ -3,8 +3,9 @@ package main
 import "github.com/ethoDomingues/braza"
 
 type Post struct {
-	ID   string
-	Text string
+	ID    string
+	Text  string
+	Likes int
 }
 
 var db = map[string]*Post{}

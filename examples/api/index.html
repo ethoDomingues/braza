@@ -5,6 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            user-select: none;
+        }
+    </style>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 </head>
@@ -36,8 +42,15 @@
                     <pre style="background-color: #ccc;padding: 10px;">[[ post.Text ]]</pre>
                 </div>
                 <div>
+                    <div @click="fetchLikePost(post.ID)"
+                        style="border: 1px solid gray;border-radius: 5px; padding: 5px;flex-direction: row;">
+                        <span style="margin:5px;">Like</span>
+                        <span>[[ post.Likes ]]</span>
+                    </div>
+                </div>
+                <div>
                     <form @submit.prevent="fetchPutPost" :data="post.ID" style="display: none;flex-direction: column;">
-                        <textarea cols="30" rows="10" placeholder="Hey, what's new?">[[ post.text ]]</textarea>
+                        <textarea cols="30" rows="10" placeholder="Hey, what's new?">[[ post.Text ]]</textarea>
                         <button>Save</button>
                     </form>
                 </div>
@@ -93,13 +106,14 @@
                 if (r.status == 200) {
                     let pIndex = null
                     posts.value.forEach((e, i) => {
-                        if (e.id == id) {
+                        if (e.ID == id) {
                             pIndex = i
                             return
                         }
                     })
                     posts.value.splice(pIndex, 1, r.data)
-                    txt.value = ""
+                    
+                    evt.target.style.display = "none"
                 }
             }
         }
@@ -109,12 +123,25 @@
             if (r.status == 204) {
                 let pIndex = null
                 posts.value.forEach((e, i) => {
-                    if (e.id == id) {
+                    if (e.ID == id) {
                         pIndex = i
-                        return
                     }
                 })
                 posts.value.splice(pIndex, 1)
+            }
+        }
+
+        const fetchLikePost = async (id) => {
+            let r = await axios.post(`http://api.localhost:5000/v1/posts/${id}/likes`)
+            if (r.status == 201) {
+                let pIndex = null
+                let p = r.data
+                posts.value.forEach((e, i) => {
+                    if (e.ID == id) {
+                        pIndex = i
+                    }
+                })
+                posts.value.splice(pIndex, 1, p)
             }
         }
 
@@ -125,6 +152,7 @@
                     posts, newPost,
                     fetchNewPost, fetchDelPost,
                     fetchPutPost, toogleFormPut,
+                    fetchLikePost,
                 }
             }
         })
