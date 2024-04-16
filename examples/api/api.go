@@ -149,7 +149,5 @@ func postLikes(ctx *braza.Ctx) {
 		db[sch.PostID] = post
 		ctx.JSON(post, 201)
 	}
-	fmt.Println(sch.PostID)
-	fmt.Println(db)
 	ctx.NotFound()
 }
