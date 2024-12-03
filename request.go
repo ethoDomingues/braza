@@ -5,10 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"encoding/xml"
-	"fmt"
 	"io"
 	"mime"
 	"mime/multipart"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -61,6 +61,14 @@ func NewRequest(req *http.Request, ctx *Ctx) *Request {
 		Header: Header(req.Header),
 	}
 
+	if host, port, err := net.SplitHostPort(req.Host); err == nil {
+		rq.Host = host
+		rq.Port = port
+		if (port != "80" && port != "443") && ctx.App.serverport == "" {
+			ctx.App.serverport = port
+		}
+	}
+
 	return rq
 }
 
@@ -76,11 +84,14 @@ type Request struct {
 	RequestURI,
 	ContentType string
 
-	isWebsocket bool
+	isWebsocket  bool
+	formIsParsed bool
 
 	ContentLength int
 
 	URL     *url.URL
+	Host    string
+	Port    string
 	Form    map[string]any
 	Args    map[string]string
 	Mime    map[string]string
@@ -122,49 +133,58 @@ func (r *Request) parseCookies() {
 		r.Cookies[c.Name] = c
 	}
 	if c, ok := r.Cookies["_session"]; ok {
-		r.ctx.Session.validate(c, r.ctx.App.SecretKey)
+		r.ctx.Session.validate(c, r.ctx)
 	}
 }
 
 func (r *Request) parseBody() {
-	ctx := r.ctx
 	r.Body.Grow(r.ContentLength)
-	io.Copy(r.Body, r.raw.Body)
-	switch {
-	case r.ContentType == "", strings.HasPrefix(r.ContentType, "application/json"):
-		json.Unmarshal(r.Body.Bytes(), &r.Form)
-	case strings.HasPrefix(r.ContentType, "application/xml"):
-		xml.Unmarshal(r.Body.Bytes(), &r.Form)
-	case strings.HasPrefix(r.ContentType, "application/yaml"):
-		yaml.Unmarshal(r.Body.Bytes(), &r.Form)
-	case strings.HasPrefix(r.ContentType, "application/x-www-form-urlencoded"):
-		v, err := url.ParseQuery(r.Body.String())
-		if err == nil {
-			for k, _v := range v {
-				r.Form[k] = _v[0]
+	r.Body.ReadFrom(r.raw.Body)
+	if !r.ctx.App.DisableParseFormBody {
+		r.ParseForm()
+	}
+}
+
+func (r *Request) ParseForm() {
+	if !r.formIsParsed {
+		ctx := r.ctx
+		switch {
+		case r.ContentType == "", strings.HasPrefix(r.ContentType, "application/json"):
+			json.Unmarshal(r.Body.Bytes(), &r.Form)
+		case strings.HasPrefix(r.ContentType, "application/xml"):
+			xml.Unmarshal(r.Body.Bytes(), &r.Form)
+		case strings.HasPrefix(r.ContentType, "application/yaml"):
+			yaml.Unmarshal(r.Body.Bytes(), &r.Form)
+		case strings.HasPrefix(r.ContentType, "application/x-www-form-urlencoded"):
+			v, err := url.ParseQuery(r.Body.String())
+			if err == nil {
+				for k, _v := range v {
+					r.Form[k] = _v[0]
+				}
+			}
+		case strings.HasPrefix(r.ContentType, "multipart/"):
+			mp := multipart.NewReader(r.Body, r.Mime["boundary"])
+			b := bytes.NewBufferString("")
+			for {
+				p, err := mp.NextPart()
+				if err == io.EOF {
+					break
+				}
+				if err != nil {
+					l.Error(err)
+					ctx.Response.BadRequest()
+				}
+				if p.FileName() != "" {
+					file := NewFile(p)
+					r.Files[p.FormName()] = append(r.Files[p.FormName()], file)
+				} else if p.FormName() != "" {
+					b.ReadFrom(p)
+					r.Form[p.FormName()] = b.String()
+					b.Reset()
+				}
 			}
 		}
-	case strings.HasPrefix(r.ContentType, "multipart/"):
-		mp := multipart.NewReader(r.Body, r.Mime["boundary"])
-		b := bytes.NewBufferString("")
-		for {
-			p, err := mp.NextPart()
-			if err == io.EOF {
-				break
-			}
-			if err != nil {
-				fmt.Println(err)
-				ctx.Response.BadRequest()
-			}
-			if p.FileName() != "" {
-				file := NewFile(p)
-				r.Files[p.FormName()] = append(r.Files[p.FormName()], file)
-			} else if p.FormName() != "" {
-				b.ReadFrom(p)
-				r.Form[p.FormName()] = b.String()
-				b.Reset()
-			}
-		}
+		r.formIsParsed = true
 	}
 }
 
@@ -193,6 +213,9 @@ func (r *Request) RequestURL() string {
 	args := []string{}
 	for k, v := range r.Args {
 		args = append(args, k, v)
+	}
+	for k, v := range r.Query {
+		args = append(args, k, v[0])
 	}
 	return r.ctx.App.UrlFor(route.Name, true, args...)
 }

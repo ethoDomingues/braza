@@ -1,6 +1,7 @@
 package braza
 
 import (
+	"crypto/rsa"
 	"encoding/json"
 	"html/template"
 	"os"
@@ -35,9 +36,10 @@ type Config struct {
 	Servername     string // for build url routes and route match (default '')
 	ListeningInTLS bool   // UrlFor return a URl with schema in "https:" (default 'false')
 
-	TemplateFolder   string // for render Templates Html. Default "templates/"
-	TemplateFuncs    template.FuncMap
-	TemplateReloader bool // if app in dev mode, allow template's reload (default true)
+	TemplateFolder          string // for render Templates Html. Default "templates/"
+	TemplateFuncs           template.FuncMap
+	DisableParseFormBody    bool // Disable default parse of Request.Form -> if true, use Request.ParseForm()
+	DisableTemplateReloader bool // if app in dev mode, disable template's reload (default false)
 
 	StaticFolder  string // for serve static files (default '/assets')
 	StaticUrlPath string // url uf request static file (default '/assets')
@@ -45,11 +47,17 @@ type Config struct {
 
 	Silent             bool   // don't print logs (default false)
 	LogFile            string // save log info in file (default '')
-	DisableFileWatcher bool   // disable autoreload in dev mode (default false)
+	DotenvFileName     string
+	DisableFileWatcher bool // disable autoreload in dev mode (default false)
 
 	SessionExpires          time.Duration // (default 30 minutes)
 	SessionPermanentExpires time.Duration // (default 31 days)
-	defaultWsUpgrader       *websocket.Upgrader
+
+	SessionPublicKey  *rsa.PublicKey
+	SessionPrivateKey *rsa.PrivateKey
+
+	serverport        string
+	defaultWsUpgrader *websocket.Upgrader
 }
 
 func (c *Config) checkConfig() {
@@ -84,6 +92,7 @@ func (c *Config) checkConfig() {
 	}
 }
 
+// setup config from json, yalm
 func (c *Config) SetupFromFile(filename string) error {
 	f, err := os.ReadFile(filename)
 	if err != nil {

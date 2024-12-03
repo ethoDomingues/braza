@@ -2,7 +2,6 @@ package braza
 
 import (
 	"fmt"
-	"log"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -47,21 +46,9 @@ func (r *Router) parse(servername string) {
 	}
 	if r.Subdomain != "" {
 		if servername == "" {
-			panic(fmt.Errorf("to use subdomains you need to first add a ServerName in the app: '%s'", r.Name))
+			panic(fmt.Errorf("to use subdomains you need to first add a ServerName in the app. Router:'%s'", r.Name))
 		}
-		sub := r.Subdomain
-		if re.digit.MatchString(sub) {
-			sub = re.digit.ReplaceAllString(sub, `(\d+)`)
-		}
-		if re.all.MatchString(sub) {
-			log.Panicf("'{*}' is not alowwed in router subdomain: '%s'", r.Name)
-		}
-		if re.str.MatchString(sub) {
-			sub = re.str.ReplaceAllString(sub, `(\w+)`)
-		} else {
-			sub = "(" + sub + ")"
-		}
-		sub = sub + `(.` + servername + `)`
+		sub := "(" + r.Subdomain + ")" + `(.` + servername + `)`
 		r.subdomainRegex = regexp.MustCompile("^" + sub + "$")
 	} else if servername != "" {
 		r.subdomainRegex = regexp.MustCompile("^(" + servername + ")$")
@@ -86,7 +73,7 @@ func (r *Router) parseRoute(route *Route) {
 		route.Name = r.Name + "." + route.Name
 	}
 	if _, ok := r.routesByName[route.Name]; ok {
-		if route.IsStatic {
+		if route.isStatic {
 			return
 		}
 		panic(fmt.Errorf("Route with name '%s' already registered", route.Name))
@@ -96,9 +83,8 @@ func (r *Router) parseRoute(route *Route) {
 	} else if route.Url != "" && (!strings.HasPrefix(route.Url, "/") && !strings.HasSuffix(r.Prefix, "/")) {
 		panic(fmt.Errorf("Route '%v' Prefix must start with slash or be a null String", r.Name))
 	}
-	if route.Url == "" {
-		route.Url = "/"
-	}
+	// if route.Url == "" {}
+
 	route.simpleUrl = route.Url
 	route.Url = filepath.Join(r.Prefix, route.Url)
 	route.parse()
@@ -111,7 +97,7 @@ func (r *Router) match(ctx *Ctx) bool {
 	rq := ctx.Request
 
 	if r.subdomainRegex != nil {
-		if !r.subdomainRegex.MatchString(rq.URL.Host) {
+		if !r.subdomainRegex.MatchString(rq.Host) {
 			return false
 		}
 	}

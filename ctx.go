@@ -1,22 +1,34 @@
 package braza
 
 import (
+	"context"
 	"net/http"
 	"slices"
 
 	"github.com/ethoDomingues/c3po"
+	"github.com/golang-jwt/jwt/v5"
 )
 
+type abortCode int
+
 // Returns a new *braza.Ctx
-func newCtx(app *App, wr http.ResponseWriter, rq *http.Request) *Ctx {
+func NewCtx(app *App, wr http.ResponseWriter, rq *http.Request) *Ctx {
 	ctx := &Ctx{
-		App:       app,
-		Global:    map[string]any{},
+		App:    app,
+		Global: map[string]any{},
+		Session: &Session{
+			del:    []string{},
+			claims: jwt.MapClaims{},
+		},
 		MatchInfo: &MatchInfo{},
-		Session:   newSession(app.SecretKey),
 	}
+
 	ctx.Request = NewRequest(rq, ctx)
 	ctx.Response = NewResponse(wr, ctx)
+
+	c := context.Background()
+	ctx.backCtx = context.WithValue(c, abortCode(1), nil)
+
 	return ctx
 }
 
@@ -35,19 +47,10 @@ type Ctx struct {
 	// Contains information about the current request, route, etc...
 	MatchInfo *MatchInfo
 
-	mids       Middlewares
+	mids       []Func
 	midCounter int
-}
 
-// executes the next middleware or main function of the request
-func (ctx *Ctx) Next() {
-	if ctx.midCounter < len(ctx.mids) {
-		n := ctx.mids[ctx.midCounter]
-		ctx.midCounter += 1
-		n(ctx)
-	} else {
-		panic(ErrHttpAbort)
-	}
+	backCtx context.Context
 }
 
 func (ctx *Ctx) parseMids() {
@@ -56,6 +59,19 @@ func (ctx *Ctx) parseMids() {
 		ctx.MatchInfo.Route.Middlewares,
 	)
 	ctx.mids = append(ctx.mids, ctx.MatchInfo.Func)
+}
+
+// executes the next middleware or main function of the request
+func (ctx *Ctx) Next() {
+
+	if ctx.midCounter < len(ctx.mids) {
+		n := ctx.mids[ctx.midCounter]
+		ctx.midCounter += 1
+		n(ctx)
+		if ctx.midCounter < len(ctx.mids) {
+			ctx.Next()
+		}
+	}
 }
 
 func (ctx *Ctx) UrlFor(name string, external bool, args ...string) string {

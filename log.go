@@ -49,18 +49,20 @@ func newLogger(logFile string) *logger {
 	}
 
 	return &logger{
-		err:     log.New(os.Stdout, _RED+"error: "+_RESET, 0),
-		warn:    log.New(os.Stdout, _YELLOW+"warn: "+_RESET, log.Ldate|log.Ltime),
-		info:    log.New(os.Stdout, _GREEN+"info: "+_RESET, log.Ldate|log.Ltime),
-		logFile: lFile,
+		err:      log.New(os.Stdout, _RED+"error: "+_RESET, 0),
+		warn:     log.New(os.Stdout, _YELLOW+"warn: "+_RESET, log.Ldate|log.Ltime),
+		info:     log.New(os.Stdout, _GREEN+"info: "+_RESET, log.Ldate|log.Ltime),
+		logFile:  lFile,
+		prodInfo: log.New(os.Stdout, "", log.Ldate|log.Ltime),
 	}
 }
 
 type logger struct {
-	info    *log.Logger
-	warn    *log.Logger
-	err     *log.Logger
-	logFile *log.Logger
+	prodInfo *log.Logger
+	info     *log.Logger
+	warn     *log.Logger
+	err      *log.Logger
+	logFile  *log.Logger
 }
 
 func (l *logger) Default(v ...any) {
@@ -118,28 +120,29 @@ func (l *logger) LogRequest(ctx *Ctx) {
 		addr = rq.URL.Path
 	}
 
-	rd := rq.RemoteAddr
-	if rd != "" {
-		rd = "[" + rd + "]"
-	}
-
 	if l.logFile != nil {
-		l.logFile.Printf("%s %d -> %s -> %s", rd, rsp.StatusCode, rq.Method, addr)
+		l.logFile.Printf("%d -> %s -> %s", rsp.StatusCode, rq.Method, addr)
 	}
 	if ctx.App.Silent {
 		return
 	}
 
-	appName := ""
+	appName := ctx.App.Srv.Addr
 	if ctx.App.Name != "" {
-		appName = ctx.App.Name + ": "
+		appName = ctx.App.Name + " > " + appName
 	}
-	l.info.Printf("%s%s %s%d%s -> %s -> %s", appName, rd, color, rsp.StatusCode, _RESET, rq.Method, addr)
+	if ctx.App.Env == "production" {
+		l.prodInfo.Printf("%d -> %s -> %s", rsp.StatusCode, rq.Method, addr)
+	} else {
+		l.info.Printf("%s %s%d%s -> %s -> %s", appName, color, rsp.StatusCode, _RESET, rq.Method, addr)
+	}
 }
 
 // Show All Routes ( internal )
-func listRoutes(app *App) {
-	app.Build()
+func showRoutes(app *App) {
+	if !app.built {
+		app.Build()
+	}
 	nameLen := 0
 	methLen := 0
 	pathLen := 0
@@ -157,12 +160,12 @@ func listRoutes(app *App) {
 		if pl := len(r.Url); pl > pathLen {
 			pathLen = pl
 		}
-		if sName := strings.Split(r.Name, "."); len(sName) == 2 {
-			router := app.routerByName[sName[0]]
-			if router != nil && router.Subdomain != "" {
-				if l := len(router.Subdomain); l > subDoLen {
-					subDoLen = l
-				}
+		if r.router.Subdomain != "" {
+			router := r.router
+			// if router != nil && router.Subdomain != "" {
+			// }
+			if l := len(router.Subdomain); l > subDoLen {
+				subDoLen = l
 			}
 		}
 	}

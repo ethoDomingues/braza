@@ -1,76 +1,77 @@
 package braza
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
-func newSession(secretKey string) *Session {
-	return &Session{
-		jwt: newJWT(secretKey),
-		del: []string{},
-	}
-}
-
 type Session struct {
-	jwt              *JWT
-	Permanent        bool
-	expires          time.Time
-	expiresPermanent time.Time
+	claims           jwt.MapClaims
 	del              []string
 	changed          bool
+	expires          time.Time
+	Permanent        bool
+	expiresPermanent time.Time
 }
 
 // validate a cookie session
-func (s *Session) validate(c *http.Cookie, secret string) {
-	if secret == "" {
+func (s *Session) validate(c *http.Cookie, ctx *Ctx) {
+	secret := ctx.App.SecretKey
+	pubKey := ctx.App.SessionPublicKey
+	privKey := ctx.App.SessionPrivateKey
+
+	s.claims = jwt.MapClaims{}
+	if secret == "" && pubKey == nil && privKey == nil {
 		return
 	}
-	str := c.Value
-	if jwt, ok := ValidJWT(str, secret); ok {
-		s.jwt = jwt
-		if p, ok := jwt.Payload["_permanent"]; ok && p == "true" {
+	tkn, err := jwt.Parse(c.Value, func(t *jwt.Token) (interface{}, error) { return pubKey, nil })
+	if err != nil {
+		return
+	}
+
+	if claims, ok := tkn.Claims.(jwt.MapClaims); ok && tkn.Valid {
+		s.claims = claims
+		if p, ok := claims["_permanent"]; ok && p == "true" {
 			s.Permanent = true
 		}
-	} else {
-		s.jwt = NewJWT(secret)
 	}
 }
 
 // This inserts a value into the session
 func (s *Session) Set(key, value string) {
-	if s.jwt.Secret == "" && len(s.jwt.Payload) > 0 {
-		l.info.Println("You are trying to use session without adding a secretKet. skipping this session")
-		return
-	}
-	s.jwt.Payload[key] = value
+	s.claims[key] = value
 	s.changed = true
 }
 
 // Returns a session value based on the key. If key does not exist, returns an empty string
-func (s *Session) Get(key string) string {
-	return s.jwt.Payload[key]
+func (s *Session) Get(key string) any {
+	return s.claims[key]
 }
 
 // Delete a Value from Session
 func (s *Session) Del(key string) {
 	s.del = append(s.del, key)
-	delete(s.jwt.Payload, key)
+	delete(s.claims, key)
 	s.changed = true
 }
 
 // Returns a cookie, with the value being a jwt
-func (s *Session) save() *http.Cookie {
-	if s.jwt == nil {
-		l.warn.Println("to use the session you need to set a secretKey. rejecting session")
+func (s *Session) save(ctx *Ctx) *http.Cookie {
+	secret := ctx.App.SecretKey
+	pubKey := ctx.App.SessionPublicKey
+	privKey := ctx.App.SessionPrivateKey
+	if secret == "" && pubKey == nil && privKey == nil {
+		l.warn.Println("to use the session you need to set a 'App.Secret' or a 'public/private key'. rejecting session")
 		return nil
 	}
-	delete(s.jwt.Payload, "exp")
-	delete(s.jwt.Payload, "iat")
-	delete(s.jwt.Payload, "_permanent")
+	delete(s.claims, "exp")
+	delete(s.claims, "iat")
+	delete(s.claims, "_permanent")
 
-	if len(s.jwt.Payload) == 0 {
+	if len(s.claims) == 0 {
 		return &http.Cookie{
 			Name:     "_session",
 			Value:    "",
@@ -85,7 +86,7 @@ func (s *Session) save() *http.Cookie {
 		} else {
 			exp = s.expiresPermanent
 		}
-		s.jwt.Payload["_permanent"] = "true"
+		s.claims["_permanent"] = true
 	} else {
 		if s.expires.IsZero() {
 			exp = time.Now().Add(time.Hour)
@@ -93,18 +94,33 @@ func (s *Session) save() *http.Cookie {
 			exp = s.expires
 		}
 	}
-
-	s.jwt.Payload["exp"] = fmt.Sprint(exp.UTC().Unix())
-	s.jwt.Payload["iat"] = fmt.Sprint(time.Now().UTC().Unix())
-	return &http.Cookie{
+	tkn, err := s.GetSign(ctx)
+	if err != nil {
+		l.err.Println(err)
+		return nil
+	}
+	c := &http.Cookie{
 		Name:     "_session",
-		Value:    s.jwt.Sign(),
+		Value:    tkn,
 		HttpOnly: true,
 		Expires:  exp,
+		SameSite: http.SameSiteNoneMode,
+		Secure:   true,
 	}
+	return c
 }
 
 // Returns a JWT Token from session data
-func (s *Session) GetSign() string { return s.save().Value }
-
-func (s *Session) String() string { return fmt.Sprint(s.jwt.Payload) }
+func (s *Session) GetSign(ctx *Ctx) (string, error) {
+	secret := ctx.App.SecretKey
+	pubKey := ctx.App.SessionPublicKey
+	privKey := ctx.App.SessionPrivateKey
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, s.claims)
+	if secret == "" && pubKey == nil && privKey == nil {
+		return "", errors.New("to set a session value, you need a set a 'App.Secret' or a 'public/private key'")
+	}
+	if pubKey != nil && privKey != nil {
+		return token.SignedString(privKey)
+	}
+	return token.SignedString([]byte(secret))
+}

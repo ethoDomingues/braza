@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	ErrHttpAbort        = errors.New("aborted")
+	ErrHttpAbort        = errors.New("abort")
 	ErrorNotFound       = errors.New("404 Not Found")
 	ErrorMethodMismatch = errors.New("405 Method Not Allowed")
 )
@@ -26,22 +26,24 @@ type _re struct {
 	all   *regexp.Regexp
 	digit *regexp.Regexp
 
-	isVar    *regexp.Regexp
-	isVarOpt *regexp.Regexp
 	dot2     *regexp.Regexp
+	isVar    *regexp.Regexp
 	slash2   *regexp.Regexp
+	isVarOpt *regexp.Regexp
+	httpPort *regexp.Regexp
 }
 
 var (
 	reMethods = regexp.MustCompile("^(?i)(GET|PUT|HEAD|POST|TRACE|PATCH|DELETE|CONNECT|OPTIONS)$")
 
 	re = _re{
-		str:    regexp.MustCompile(`{\w+(:str)?}`),
-		all:    regexp.MustCompile(`(\{\*\})|(\{\w+:path\})`),
-		isVar:  regexp.MustCompile(`{\w+(\:(int|str|path))?\}|\{\*\}`),
-		digit:  regexp.MustCompile(`{\w+:int}`),
-		dot2:   regexp.MustCompile(`[.]{2,}`),
-		slash2: regexp.MustCompile(`[\/]{2,}`),
+		str:      regexp.MustCompile(`{\w+(:str)?}`),
+		all:      regexp.MustCompile(`(\{\*\})|(\{\w+:path\})`),
+		isVar:    regexp.MustCompile(`{\w+(\:(int|str|path))?\}|\{\*\}`),
+		digit:    regexp.MustCompile(`{\w+:int}`),
+		dot2:     regexp.MustCompile(`[.]{2,}`),
+		slash2:   regexp.MustCompile(`[\/]{2,}`),
+		httpPort: regexp.MustCompile(`^([:]?[\d]{1,})$`),
 	}
 )
 

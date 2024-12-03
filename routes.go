@@ -11,7 +11,6 @@ import (
 )
 
 type Func func(ctx *Ctx)
-type Middlewares []Func
 
 /*
 example:
@@ -48,7 +47,7 @@ type Route struct {
 	Cors        *Cors
 	Schema      Schema
 	MapCtrl     MapCtrl
-	Middlewares Middlewares
+	Middlewares []Func
 
 	router      *Router
 	simpleName  string
@@ -56,7 +55,7 @@ type Route struct {
 	urlRegex    []*regexp.Regexp
 	isUrlPrefix bool
 	parsed,
-	IsStatic bool
+	isStatic bool
 	hasSufix bool
 }
 
@@ -176,9 +175,25 @@ func (r *Route) parse() {
 }
 
 func (r *Route) matchURL(ctx *Ctx, url string) bool {
-	// if url == /  and route.Url == /
-	if url == "/" && url == r.Url {
+	if url == r.Url {
 		return true
+	}
+	// if url == /  and route.Url == ""
+	if url == "/" && r.Url == "" {
+		if !ctx.App.StrictSlash {
+			return true
+		} else {
+			return false // poderia fazer um redirect, nas acho q ia dar b.o
+		}
+	}
+
+	// if url == ""  and route.Url == /
+	if url == "" && r.Url == "/" {
+		if !ctx.App.StrictSlash {
+			return true
+		} else {
+			return false // poderia fazer um redirect, nas acho q ia dar b.o²
+		}
 	}
 
 	nurl := strings.TrimPrefix(url, "/")
@@ -189,7 +204,7 @@ func (r *Route) matchURL(ctx *Ctx, url string) bool {
 	lRegex := len(r.urlRegex)
 
 	if lSplit != lRegex {
-		if !ctx.App.DisableStatic && r.IsStatic {
+		if !ctx.App.DisableStatic && r.isStatic {
 			if strings.HasPrefix(ctx.Request.URL.Path, ctx.App.StaticUrlPath) {
 				return true
 			}

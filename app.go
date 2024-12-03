@@ -2,14 +2,17 @@ package braza
 
 import (
 	"errors"
+	"flag"
 	"fmt"
-	"html/template"
+	"log"
 	"net"
 	"net/http"
+	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
+	"github.com/google/uuid"
+	"github.com/joho/godotenv"
 	"golang.org/x/exp/maps"
 )
 
@@ -28,16 +31,35 @@ var (
 		"prod":       "production",
 		"production": "production",
 	}
-	l             = newLogger("")
-	listenInAll   bool
-	localAddress  = getOutboundIP()
-	htmlTemplates map[string]*template.Template
+	l            = newLogger("")
+	listenAll    bool
+	localAddress = getOutboundIP()
+	mapStackApps = map[string]*App{}
 )
+
+var (
+	env       string
+	port      string
+	address   string
+	listRoute bool
+)
+
+func init() {
+	flag.StringVar(&env, "env", "", "set a address listener")
+	flag.StringVar(&port, "port", "", "set a address listener")
+	flag.StringVar(&address, "address", "", "set a address listener")
+	flag.BoolVar(&listRoute, "routes", false, "if true, show routes before start listener")
+}
 
 /*
 Create a new app with a default settings
 */
 func NewApp(cfg *Config) *App {
+	dfn := ".env"
+	if cfg != nil && cfg.DotenvFileName != "" {
+		dfn = cfg.DotenvFileName
+	}
+	godotenv.Load(dfn)
 	router := NewRouter("")
 	router.is_main = true
 	c := &Config{}
@@ -66,6 +88,7 @@ type App struct {
 
 	Srv *http.Server
 
+	uuid  string
 	built bool
 }
 
@@ -75,7 +98,7 @@ func (app *App) logStarterListener() {
 		l.err.Panic(err)
 	}
 	envDev := app.Env == "development"
-	if listenInAll {
+	if listenAll {
 		app.Srv.Addr = localAddress
 		if envDev {
 			l.Defaultf("Server is listening on all address in %sdevelopment mode%s", _RED, _RESET)
@@ -95,47 +118,57 @@ func (app *App) logStarterListener() {
 		}
 		l.info.Printf("          listening on: http://%s:%s", addr, port)
 	}
+	if envDev {
+		if app.Servername != "" {
+			l.info.Printf("          setting the servername to '%s'", app.Servername)
+		}
+	}
 }
 
 func (app *App) startListener(c chan error) {
 	c <- app.Srv.ListenAndServe()
 }
 
-func (app *App) startListenerTLS(cert, key string, c chan error) {
-	c <- app.Srv.ListenAndServeTLS(cert, key)
+func (app *App) startListenerTLS(privKey, pubKey string, c chan error) {
+	c <- app.Srv.ListenAndServeTLS(privKey, pubKey)
 }
 
-func runSrv(app *App, cert, key string, host ...string) (err error) {
+func runSrv(app *App, privKey, pubKey string, host ...string) (err error) {
 	app.Build(host...)
 	var reboot = make(chan bool)
 	var srvErr = make(chan error)
 
-	if !app.DisableFileWatcher {
-		if app.Env == "development" {
-			go fileWatcher(reboot)
-		}
+	if app.Env == "development" && !app.DisableFileWatcher {
+		go fileWatcher(reboot)
 	}
 
 	if !app.Silent {
 		app.logStarterListener()
 	}
 
-	if cert != "" || key != "" {
-		go app.startListenerTLS(cert, key, srvErr)
+	if privKey != "" && pubKey != "" {
+		go app.startListenerTLS(privKey, pubKey, srvErr)
 	} else {
 		go app.startListener(srvErr)
 	}
 
-	for {
-		select {
-		case <-reboot:
-			app.Srv.Close()
-			RestarSelf()
-		case err = <-srvErr:
-			if !errors.Is(err, http.ErrServerClosed) {
-				return err
+	if !app.DisableFileWatcher {
+		for {
+			select {
+			case <-reboot:
+				app.Srv.Close()
+				selfReboot()
+			case err = <-srvErr:
+				if !errors.Is(err, http.ErrServerClosed) {
+					l.err.Println(err)
+					return err
+				}
 			}
 		}
+	} else {
+		e := <-srvErr
+		l.err.Println(e)
+		return e
 	}
 }
 
@@ -162,6 +195,9 @@ example:
 */
 func (app *App) Build(addr ...string) {
 	app.parseApp()
+	if app.uuid == "" {
+		app.uuid = uuid.New().String()
+	}
 	l = newLogger(app.LogFile)
 
 	var address string
@@ -174,53 +210,89 @@ func (app *App) Build(addr ...string) {
 			}
 		}
 	}
-	if address == "" {
-		address = "127.0.0.1:5000"
-	}
 
 	if strings.Contains(address, "0.0.0.0") {
-		listenInAll = true
+		listenAll = true
+	}
+	app.setFlags()
+	app.parseSrvApp(address)
+
+}
+
+func (app *App) parseSrvApp(addr string) {
+	app.Srv.Handler = app
+	app.Srv.MaxHeaderBytes = 1 << 20
+	if app.Srv.Addr == "" && addr != "" {
+		app.Srv.Addr = addr
+	} else if app.Srv.Addr == "" {
+		app.Srv.Addr = "localhost:5000"
 	}
 
+}
+
+func (app *App) setFlags() {
+	flag.Parse()
+	if e, ok := allowEnv[env]; env != "" && ok {
+		app.Env = e
+	}
 	if app.Srv == nil {
-		app.Srv = &http.Server{
-			Addr:           address,
-			Handler:        app,
-			MaxHeaderBytes: 1 << 20,
+		app.Srv = &http.Server{}
+	}
+	if address != "" {
+		app.Srv.Addr = address
+	}
+	if port != "" {
+		if !re.httpPort.MatchString(port) {
+			l.err.Panicf("port '%s' is not valid!", port)
 		}
-	} else {
-		app.Srv.Handler = app
-		app.Srv.MaxHeaderBytes = 1 << 20
+		port = strings.TrimPrefix(port, ":")
+		if app.Srv.Addr != "" {
+			h, p, err := net.SplitHostPort(app.Srv.Addr)
+			if h == "" && p == "" && err != nil {
+				l.err.Panic(err)
+			}
+			app.Srv.Addr = net.JoinHostPort(h, port)
+		} else {
+			app.Srv.Addr = ":" + port
+		}
+	}
+	if listRoute {
+		showRoutes(app)
 	}
 }
 
-/*
-Create a clone of app.
-obs: changes to the application do not affect the clone
-*/
-func (app *App) Clone() *App {
-	clone := NewApp(app.Config)
-	*clone.Router = *app.Router
-
-	clone.BasicAuth = app.BasicAuth
-	clone.AfterRequest = app.AfterRequest
-	clone.BeforeRequest = app.BeforeRequest
-	clone.TearDownRequest = app.TearDownRequest
-
-	clone.Srv = app.Srv
-	clone.routers = app.routers
-	clone.routerByName = app.routerByName
-	return clone
+func (app *App) setEnv() {
+	if e := os.Getenv("ENV"); e != "" {
+		app.Env = e
+	}
+	if s := os.Getenv("SERVERNAME"); s != "" {
+		app.Servername = s
+	}
+	if addr := os.Getenv("ADDRESS"); addr != "" {
+		if app.Srv == nil {
+			app.Srv = &http.Server{}
+		}
+		app.Srv.Addr = addr
+	}
 }
 
 // Parse the router and your routes
 func (app *App) parseApp() {
+	app.setEnv()
 	app.checkConfig()
 	if app.Servername != "" {
-		Srv := app.Servername
-		Srv = strings.TrimPrefix(Srv, ".")
-		Srv = strings.TrimSuffix(Srv, "/")
-		app.Servername = Srv
+		srv := strings.TrimPrefix(app.Servername, ".")
+		srv = strings.TrimSuffix(srv, "/")
+		h, p, err := net.SplitHostPort(srv)
+		if err != nil && p != "" && h != "" {
+			log.Fatal(err)
+		}
+		if p != "" {
+			app.serverport = p
+		}
+		if h != "" {
+			app.Servername = h
+		}
 	}
 
 	if env, ok := allowEnv[app.Env]; ok {
@@ -240,7 +312,7 @@ func (app *App) parseApp() {
 			Url:      path,
 			Func:     serveFileHandler,
 			Name:     "assets",
-			IsStatic: true,
+			isStatic: true,
 		})
 	}
 
@@ -262,19 +334,20 @@ func (app *App) parseApp() {
 		}
 
 	}
+
+	app.routerByName[app.Name] = app.Router
 	for _, router := range app.routers {
 		router.parse(app.Servername)
 		if router != app.Router {
 			maps.Copy(app.routesByName, router.routesByName)
 		}
 	}
-	app.routerByName[app.Router.Name] = app.Router
 
 	app.built = true
 }
 
 /*
-Register the router in app
+Register Router in app
 
 	func main() {
 		api := braza.NewRouter("api")
@@ -282,8 +355,8 @@ Register the router in app
 		api.get("/products/{productID:int}")
 
 		app := braza.NewApp(nil)
-
-		app.Mount(getApiRouter)
+		app.Mount(api)
+		// do anything ...
 		app.Listen()
 	}
 */
@@ -294,8 +367,6 @@ func (app *App) Mount(routers ...*Router) {
 		} else if _, ok := app.routerByName[router.Name]; ok {
 			panic(fmt.Errorf("router '%s' already regitered", router.Name))
 		}
-		router.parse(app.Servername)
-		app.routerByName[router.Name] = router
 		app.routers = append(app.routers, router)
 	}
 }
@@ -307,8 +378,6 @@ func (app *App) ErrorHandler(statusCode int, f Func) {
 	app.errHandlers[statusCode] = f
 }
 
-func (app *App) ShowRoutes() { listRoutes(app) }
-
 func (app *App) Listen(host ...string) (err error) {
 	return runSrv(app, "", "", host...)
 }
@@ -317,22 +386,62 @@ func (app *App) ListenTLS(certFile, certKey string, host ...string) (err error) 
 	return runSrv(app, certFile, certKey, host...)
 }
 
+func Daemon(apps ...*App) error {
+	cErrs := make(chan map[string]error)
+	countErrors := map[string]int{}
+	if mapStackApps == nil {
+		mapStackApps = map[string]*App{}
+	}
+
+	for c, app := range apps {
+		if app.Name == "" {
+			l.warn.Println("When using 'Daemon', a good practice is to name all 'apps'")
+		}
+		app.Build()
+		countErrors[app.uuid] = 0
+		mapStackApps[app.uuid] = app
+		if c > 0 {
+			app.DisableFileWatcher = true
+		}
+		go runAppDaemon(app, cErrs)
+	}
+	apps = nil
+	for {
+		<-cErrs
+		for _, a := range mapStackApps {
+			a.Srv.Close()
+		}
+		// for appUUID, err := range mErr {
+		// }
+	}
+
+}
+
+func runAppDaemon(app *App, err chan map[string]error) {
+	err <- map[string]error{app.uuid: app.Listen()}
+}
+
 /*
 
 
 
  */
 
-func (app *App) match(ctx *Ctx) bool {
+func execTeardown(ctx *Ctx) {
+	if ctx.App.TearDownRequest != nil {
+		go ctx.App.TearDownRequest(ctx)
+	}
+}
+
+func (app *App) match(ctx *Ctx) {
 	rq := ctx.Request
 
 	if app.Servername != "" {
-		rqUrl := rq.URL.Host
-		if net.ParseIP(rqUrl) != nil {
-			return false
+		if net.ParseIP(rq.Host) != nil {
+			ctx.NotFound()
 		}
-		if !strings.Contains(rqUrl, app.Servername) {
-			return false
+		if !strings.Contains(rq.Host, app.Servername) {
+			ctx.NotFound()
 		}
 	}
 
@@ -345,119 +454,105 @@ func (app *App) match(ctx *Ctx) bool {
 				}
 				ctx.Response.Redirect(ctx.UrlFor(ctx.MatchInfo.Route.Name, true, args...))
 			}
-			return true
+			return
 		}
 	}
 	mi := ctx.MatchInfo
 	if mi.MethodNotAllowed != nil {
 		ctx.MethodNotAllowed()
-	} else {
-		ctx.NotFound()
 	}
-	return false
+	ctx.NotFound()
 }
 
 // exec route and handle errors of application
 func (app *App) execRoute(ctx *Ctx) {
+	app.match(ctx)
 	rq := ctx.Request
 	mi := ctx.MatchInfo
+
+	rq.parse()
+	ctx.parseMids()
+
+	if app.BeforeRequest != nil {
+		app.BeforeRequest(ctx)
+	}
+
 	if mi.Func == nil && rq.Method == "OPTIONS" {
 		optionsHandler(ctx)
+		return
+	}
+	ctx.Next()
+}
+
+func (app *App) execHandlerError(ctx *Ctx, code int) {
+	ctx.Reset()
+	if h, ok := app.errHandlers[code]; ok {
+		ctx.StatusCode = code
+		h(ctx)
 	} else {
-		rq.parse()
-		ctx.parseMids()
-		if app.BeforeRequest != nil {
-			app.BeforeRequest(ctx)
-		}
-		ctx.Next()
-	}
-}
-
-func (app *App) execHandlerError(ctx *Ctx) {
-	err := recover()
-	if err != nil {
-		var errStr string
-		if s, ok := err.(string); ok {
-			if s == "" {
-				return
-			}
-			errStr = s
-		} else {
-			errStr = err.(error).Error()
-		}
-
-		if strings.HasPrefix(errStr, "abort:") {
-			strCode := strings.TrimPrefix(errStr, "abort:")
-			code, err := strconv.Atoi(strCode)
-			if err != nil {
-				panic(err)
-			}
-			if h, ok := app.errHandlers[code]; ok {
-				ctx.StatusCode = code
-				ctx.Reset()
-				h(ctx)
-			}
-		} else {
-			if h, ok := app.errHandlers[500]; ok {
-				ctx.StatusCode = 500
-				ctx.Reset()
-				h(ctx)
-			} else {
-				panic(errStr)
-			}
-		}
-	}
-}
-
-func execTeardown(ctx *Ctx) {
-	if ctx.App.TearDownRequest != nil {
-		go ctx.App.TearDownRequest(ctx)
+		ctx.StatusCode = code
+		statusText := http.StatusText(code)
+		body := fmt.Sprintf("%d %s", code, statusText)
+		ctx.Headers.Set("Content-Type", "text/plain")
+		ctx.WriteString(body)
 	}
 }
 
 func (app *App) closeConn(ctx *Ctx) {
-	rsp := ctx.Response
 	err := recover()
-	mi := ctx.MatchInfo
-
 	defer execTeardown(ctx)
-	defer l.LogRequest(ctx)
+	defer req500(ctx)
 
+	rsp := ctx.Response
 	if err == nil {
-		if mi.Match {
-			if ctx.Session.changed {
-				rsp.SetCookie(ctx.Session.save())
-			}
-			rsp.parseHeaders()
-			rsp.Headers.Save(rsp.raw)
+		reqOK(ctx)
+		return
+	}
+	if e, ok := err.(error); ok && errors.Is(ErrHttpAbort, e) {
+		code := ctx.backCtx.Value(abortCode(1))
+		if c, ok := code.(int); ok {
+			app.execHandlerError(ctx, c)
 		}
-		rsp.raw.WriteHeader(rsp.StatusCode)
-		fmt.Fprint(rsp.raw, rsp.String())
+		reqOK(ctx)
 	} else {
-		statusText := ""
-		errStr, ok := err.(string)
-		if ok && errStr == "ok" {
-			if ctx.App.AfterRequest != nil {
-				ctx.App.AfterRequest(ctx)
-			}
-		} else {
-			rsp.StatusCode = 500
-			statusText = "500 Internal Server Error"
-			l.Error(err)
-		}
-		rsp.raw.WriteHeader(rsp.StatusCode)
+		rsp.StatusCode = 500
+		statusText := "500 Internal Server Error"
+		l.Error(err)
+		rsp.raw.WriteHeader(500)
 		fmt.Fprint(rsp.raw, statusText)
 	}
 }
 
+func req500(ctx *Ctx) {
+	defer l.LogRequest(ctx)
+	if err := recover(); err != nil {
+		statusText := "500 Internal Server Error"
+		l.Error(err)
+		ctx.raw.WriteHeader(500)
+		fmt.Fprint(ctx.raw, statusText)
+	}
+}
+
+func reqOK(ctx *Ctx) {
+	mi := ctx.MatchInfo
+	rsp := ctx.Response
+	if mi.Match {
+		if ctx.Session.changed {
+			rsp.SetCookie(ctx.Session.save(ctx))
+		}
+		rsp.parseHeaders()
+		rsp.Headers.Save(rsp.raw)
+	}
+	rsp.raw.WriteHeader(rsp.StatusCode)
+	fmt.Fprint(rsp.raw, rsp.String())
+}
+
 // # http.Handler
 func (app *App) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
-	ctx := newCtx(app.Clone(), wr, req)
+	ctx := NewCtx(app, wr, req)
 	defer app.closeConn(ctx)
-	defer app.execHandlerError(ctx)
-	if app.match(ctx) {
-		app.execRoute(ctx)
-	}
+	app.execRoute(ctx)
+
 }
 
 // # Url Builder
@@ -472,9 +567,9 @@ func (app *App) UrlFor(name string, external bool, args ...string) string {
 		route  *Route
 		router *Router
 	)
-	if app.Srv == nil {
-		l.err.Fatalf("you are trying to use this function outside of a context")
-	}
+	// if app.Srv == nil {
+	// 	l.err.Fatalf("you are trying to use this function outside of a context")
+	// }
 	if len(args)%2 != 0 {
 		l.err.Fatalf("numer of args of build url, is invalid: UrlFor only accept pairs of args ")
 	}
@@ -502,15 +597,19 @@ func (app *App) UrlFor(name string, external bool, args ...string) string {
 		if app.ListeningInTLS || len(app.Srv.TLSConfig.Certificates) > 0 {
 			schema = "https://"
 		}
+		srvname := app.Servername
+		if app.serverport != "" && (app.serverport != "80" && app.serverport != "443") {
+			srvname = net.JoinHostPort(app.Servername, app.serverport)
+		}
 		if router.Subdomain != "" {
-			host = schema + router.Subdomain + "." + app.Servername
+			host = schema + router.Subdomain + "." + srvname
 		} else {
 			if app.Servername == "" {
 				_, p, _ := net.SplitHostPort(app.Srv.Addr)
 				h := net.JoinHostPort(localAddress, p)
 				host = schema + h
 			} else {
-				host = schema + app.Servername
+				host = schema + srvname
 			}
 		}
 	}
