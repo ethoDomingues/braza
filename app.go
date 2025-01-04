@@ -9,11 +9,11 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
-	"golang.org/x/exp/maps"
 )
 
 var (
@@ -38,10 +38,11 @@ var (
 )
 
 var (
-	env       string
-	port      string
-	address   string
-	listRoute bool
+	env          string
+	port         string
+	address      string
+	listRoute    bool
+	listRouteSch string
 )
 
 func init() {
@@ -49,6 +50,7 @@ func init() {
 	flag.StringVar(&port, "port", "", "set a address listener")
 	flag.StringVar(&address, "address", "", "set a address listener")
 	flag.BoolVar(&listRoute, "routes", false, "if true, show routes before start listener")
+	flag.StringVar(&listRouteSch, "routeSch", "", "show routes schema-> app.route || app.route:GET")
 }
 
 /*
@@ -61,17 +63,18 @@ func NewApp(cfg *Config) *App {
 	}
 	godotenv.Load(dfn)
 	router := NewRouter("")
-	router.is_main = true
+	router.main = true
 	c := &Config{}
 	if cfg != nil {
 		*c = *cfg // se estiver clonando o app, evita alguns erros
 	}
-	return &App{
+	app := &App{
 		Config:       c,
 		Router:       router,
-		routers:      []*Router{router},
-		routerByName: map[string]*Router{"": router},
+		routers:      []*Router{},
+		routerByName: map[string]*Router{},
 	}
+	return app
 }
 
 type App struct {
@@ -259,6 +262,9 @@ func (app *App) setFlags() {
 	if listRoute {
 		showRoutes(app)
 	}
+	if listRouteSch != "" {
+		showRouteSchema(app, listRouteSch)
+	}
 }
 
 func (app *App) setEnv() {
@@ -317,8 +323,8 @@ func (app *App) parseApp() {
 	}
 
 	// se o usuario mudar o router principal, isso evita alguns erro
-	if !app.is_main {
-		app.is_main = true
+	if !app.main {
+		app.main = true
 
 		if app.Router.Routes == nil {
 			app.Router.Routes = []*Route{}
@@ -335,14 +341,15 @@ func (app *App) parseApp() {
 
 	}
 
-	app.routerByName[app.Name] = app.Router
+	if !slices.Contains(app.routers, app.Router) {
+		app.routers = append(app.routers, app.Router)
+	}
 	for _, router := range app.routers {
 		router.parse(app.Servername)
-		if router != app.Router {
-			maps.Copy(app.routesByName, router.routesByName)
+		for n, r := range router.routesByName {
+			app.routesByName[n] = r
 		}
 	}
-
 	app.built = true
 }
 
@@ -521,30 +528,6 @@ func (app *App) closeConn(ctx *Ctx) {
 		rsp.raw.WriteHeader(500)
 		fmt.Fprint(rsp.raw, statusText)
 	}
-}
-
-func req500(ctx *Ctx) {
-	defer l.LogRequest(ctx)
-	if err := recover(); err != nil {
-		statusText := "500 Internal Server Error"
-		l.Error(err)
-		ctx.raw.WriteHeader(500)
-		fmt.Fprint(ctx.raw, statusText)
-	}
-}
-
-func reqOK(ctx *Ctx) {
-	mi := ctx.MatchInfo
-	rsp := ctx.Response
-	if mi.Match {
-		if ctx.Session.changed {
-			rsp.SetCookie(ctx.Session.save(ctx))
-		}
-		rsp.parseHeaders()
-		rsp.Headers.Save(rsp.raw)
-	}
-	rsp.raw.WriteHeader(rsp.StatusCode)
-	fmt.Fprint(rsp.raw, rsp.String())
 }
 
 // # http.Handler

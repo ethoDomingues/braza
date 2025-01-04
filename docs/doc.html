@@ -1,0 +1,2393 @@
+using module mode; GOMOD=/home/etho/go/src/github.com/ethoDomingues/braza/go.mod
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#375EAB">
+
+	<title>braza - Go Documentation Server</title>
+
+	<link type="text/css" rel="stylesheet" href="./style.css">
+
+	<script>window.initFuncs = [];</script>
+	<script src="./jquery.js" defer></script>
+
+
+
+	<script>var goVersion = "go1.22.2";</script>
+	<script src="./godocs.js" defer></script>
+</head>
+
+<body>
+
+	<div id='lowframe'
+		style="position: fixed; bottom: 0; left: 0; height: 0; width: 100%; border-top: thin solid grey; background-color: white; overflow: auto;">
+		...
+	</div><!-- #lowframe -->
+
+	<div id="topbar" class="wide">
+		<div class="container">
+			<div class="top-heading" id="heading-wide"><a href="/pkg/">Go Documentation Server</a></div>
+			<div class="top-heading" id="heading-narrow"><a href="/pkg/">GoDoc</a></div>
+			<a href="#" id="menu-button"><span id="menu-button-arrow">&#9661;</span></a>
+			<form method="GET" action="/search">
+				<div id="menu">
+
+					<span class="search-box"><input type="search" id="search" name="q" placeholder="Search"
+							aria-label="Search" required><button type="submit"><span><!-- magnifying glass: --><svg
+									width="24" height="24" viewBox="0 0 24 24">
+									<title>submit search</title>
+									<path
+										d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+									<path d="M0 0h24v24H0z" fill="none" />
+								</svg></span></button></span>
+				</div>
+			</form>
+
+		</div>
+	</div>
+
+
+
+	<div id="page" class="wide">
+		<div class="container">
+
+
+			<h1>
+				Package braza
+				<span class="text-muted"></span>
+			</h1>
+
+
+
+
+
+
+
+			<div id="nav"></div>
+
+
+			<!--
+	Copyright 2009 The Go Authors. All rights reserved.
+	Use of this source code is governed by a BSD-style
+	license that can be found in the LICENSE file.
+-->
+			<!--
+	Note: Static (i.e., not template-generated) href and id
+	attributes start with "pkg-" to make it impossible for
+	them to conflict with generated attributes (some of which
+	correspond to Go identifiers).
+-->
+
+			<script>
+				document.ANALYSIS_DATA = null;
+				document.CALLGRAPH = null;
+			</script>
+
+
+
+			<div id="short-nav">
+				<dl>
+					<dd><code>import "github.com/ethoDomingues/braza"</code></dd>
+				</dl>
+				<dl>
+					<dd><a href="#pkg-overview" class="overviewLink">Overview</a></dd>
+					<dd><a href="#pkg-index" class="indexLink">Index</a></dd>
+
+
+				</dl>
+			</div>
+			<!-- The package's Name is printed as title by the top-level template -->
+			<div id="pkg-overview" class="toggleVisible">
+				<div class="collapsed">
+					<h2 class="toggleButton" title="Click to show Overview section">Overview ▹</h2>
+				</div>
+				<div class="expanded">
+					<h2 class="toggleButton" title="Click to hide Overview section">Overview ▾</h2>
+
+
+				</div>
+			</div>
+
+			<div id="pkg-index" class="toggleVisible">
+				<div class="collapsed">
+					<h2 class="toggleButton" title="Click to show Index section">Index ▹</h2>
+				</div>
+				<div class="expanded">
+					<h2 class="toggleButton" title="Click to hide Index section">Index ▾</h2>
+
+					<!-- Table of contents for API; must be named manual-nav to turn off auto nav. -->
+					<div id="manual-nav">
+						<dl>
+
+
+							<dd><a href="#pkg-variables">Variables</a></dd>
+
+
+
+							<dd><a href="#Daemon">func Daemon(apps ...*App) error</a></dd>
+
+
+							<dd><a href="#MountSchemaFromRequest">func MountSchemaFromRequest(f *c3po.Fielder, rq
+									*Request) (any, error)</a></dd>
+
+
+							<dd><a href="#TypeOf">func TypeOf(obj any) string</a></dd>
+
+
+
+							<dd><a href="#App">type App</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#NewApp">func NewApp(cfg *Config) *App</a></dd>
+
+
+
+							<dd>&nbsp; &nbsp; <a href="#App.Build">func (app *App) Build(addr ...string)</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#App.ErrorHandler">func (app *App) ErrorHandler(statusCode int, f
+									Func)</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#App.Listen">func (app *App) Listen(host ...string) (err
+									error)</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#App.ListenTLS">func (app *App) ListenTLS(certFile, certKey
+									string, host ...string) (err error)</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#App.Mount">func (app *App) Mount(routers ...*Router)</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#App.ServeHTTP">func (app *App) ServeHTTP(wr http.ResponseWriter,
+									req *http.Request)</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#App.UrlFor">func (app *App) UrlFor(name string, external bool,
+									args ...string) string</a></dd>
+
+
+
+							<dd><a href="#Config">type Config</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#NewConfig">func NewConfig() *Config</a></dd>
+
+
+
+							<dd>&nbsp; &nbsp; <a href="#Config.SetupFromFile">func (c *Config) SetupFromFile(filename
+									string) error</a></dd>
+
+
+
+							<dd><a href="#Cors">type Cors</a></dd>
+
+
+
+
+							<dd><a href="#Ctx">type Ctx</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#NewCtx">func NewCtx(app *App, wr http.ResponseWriter, rq
+									*http.Request) *Ctx</a></dd>
+
+
+
+							<dd>&nbsp; &nbsp; <a href="#Ctx.Next">func (ctx *Ctx) Next()</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Ctx.UrlFor">func (ctx *Ctx) UrlFor(name string, external bool,
+									args ...string) string</a></dd>
+
+
+
+							<dd><a href="#File">type File</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#NewFile">func NewFile(p *multipart.Part) *File</a></dd>
+
+
+
+
+							<dd><a href="#Func">type Func</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Handler">func Handler(h http.Handler) Func</a></dd>
+
+
+
+							<dd>&nbsp; &nbsp; <a href="#Func.String">func (f Func) String() string</a></dd>
+
+
+
+							<dd><a href="#Header">type Header</a></dd>
+
+
+
+							<dd>&nbsp; &nbsp; <a href="#Header.Add">func (h *Header) Add(key string, value string)</a>
+							</dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Header.Del">func (h *Header) Del(key string)</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Header.Get">func (h *Header) Get(key string) string</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Header.Save">func (h *Header) Save(w http.ResponseWriter)</a>
+							</dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Header.Set">func (h *Header) Set(key string, value string)</a>
+							</dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Header.SetCookie">func (h *Header) SetCookie(cookie
+									*http.Cookie)</a></dd>
+
+
+
+							<dd><a href="#MapCtrl">type MapCtrl</a></dd>
+
+
+
+
+							<dd><a href="#MatchInfo">type MatchInfo</a></dd>
+
+
+
+
+							<dd><a href="#Meth">type Meth</a></dd>
+
+
+
+
+							<dd><a href="#Request">type Request</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#NewRequest">func NewRequest(req *http.Request, ctx *Ctx)
+									*Request</a></dd>
+
+
+
+							<dd>&nbsp; &nbsp; <a href="#Request.BasicAuth">func (r *Request) BasicAuth() (username,
+									password string, ok bool)</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Request.Clone">func (r *Request) Clone(ctx context.Context)
+									*Request</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Request.Context">func (r *Request) Context() context.Context</a>
+							</dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Request.Ctx">func (r *Request) Ctx() *Ctx</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Request.ParseForm">func (r *Request) ParseForm()</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Request.ProtoAtLeast">func (r *Request) ProtoAtLeast(major,
+									minor int) bool</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Request.RawRequest">func (r *Request) RawRequest()
+									*http.Request</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Request.Referer">func (r *Request) Referer() string</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Request.RequestURL">func (r *Request) RequestURL() string</a>
+							</dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Request.UrlFor">func (r *Request) UrlFor(name string, external
+									bool, args ...string) string</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Request.UserAgent">func (r *Request) UserAgent() string</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Request.Websocket">func (r *Request) Websocket()
+									(*websocket.Conn, error)</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Request.WithContext">func (r *Request) WithContext(ctx
+									context.Context) *Request</a></dd>
+
+
+
+							<dd><a href="#Response">type Response</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#NewResponse">func NewResponse(wr http.ResponseWriter, ctx *Ctx)
+									*Response</a></dd>
+
+
+
+							<dd>&nbsp; &nbsp; <a href="#Response.Abort">func (r *Response) Abort(code int)</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Response.BadRequest">func (r *Response) BadRequest()</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Response.CheckErr">func (r *Response) CheckErr(err error)</a>
+							</dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Response.Close">func (r *Response) Close()</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Response.Created">func (r *Response) Created()</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Response.Forbidden">func (r *Response) Forbidden()</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Response.HTML">func (r *Response) HTML(body any, code int)</a>
+							</dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Response.Header">func (r Response) Header() http.Header</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Response.Hijack">func (r *Response) Hijack() (net.Conn,
+									*bufio.ReadWriter, error)</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Response.ImATaerpot">func (r *Response) ImATaerpot()</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Response.InternalServerError">func (r *Response)
+									InternalServerError()</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Response.JSON">func (r *Response) JSON(body any, code int)</a>
+							</dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Response.MethodNotAllowed">func (r *Response)
+									MethodNotAllowed()</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Response.NoContent">func (r *Response) NoContent()</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Response.NotFound">func (r *Response) NotFound()</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Response.Ok">func (r *Response) Ok()</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Response.Redirect">func (r *Response) Redirect(url string)</a>
+							</dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Response.RenderTemplate">func (r *Response) RenderTemplate(tmpl
+									string, data ...any)</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Response.ServeFile">func (r *Response) ServeFile(pathToFile
+									string)</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Response.SetCookie">func (r *Response) SetCookie(cookie
+									*http.Cookie)</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Response.TEXT">func (r *Response) TEXT(body any, code int)</a>
+							</dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Response.Unauthorized">func (r *Response) Unauthorized()</a>
+							</dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Response.Write">func (r Response) Write(b []byte) (int,
+									error)</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Response.WriteHeader">func (r Response) WriteHeader(statusCode
+									int)</a></dd>
+
+
+
+							<dd><a href="#Route">type Route</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#CONNECT">func CONNECT(url string, f Func) *Route</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#DELETE">func DELETE(url string, f Func) *Route</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#GET">func GET(url string, f Func) *Route</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#HEAD">func HEAD(url string, f Func) *Route</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#OPTIONS">func OPTIONS(url string, f Func) *Route</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#PATCH">func PATCH(url string, f Func) *Route</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#POST">func POST(url string, f Func) *Route</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#PUT">func PUT(url string, f Func) *Route</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#TRACE">func TRACE(url string, f Func) *Route</a></dd>
+
+
+
+							<dd>&nbsp; &nbsp; <a href="#Route.GetRouter">func (r *Route) GetRouter() *Router</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Route.MountURI">func (r *Route) MountURI(args ...string)
+									string</a></dd>
+
+
+
+							<dd><a href="#Router">type Router</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#NewRouter">func NewRouter(name string) *Router</a></dd>
+
+
+
+							<dd>&nbsp; &nbsp; <a href="#Router.Add">func (r *Router) Add(url, name string, f Func, meths
+									[]string)</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Router.AddRoute">func (r *Router) AddRoute(routes ...*Route)</a>
+							</dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Router.AllMethods">func (r *Router) AllMethods(url string, f
+									Func)</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Router.CONNECT">func (r *Router) CONNECT(url string, f Func)</a>
+							</dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Router.DELETE">func (r *Router) DELETE(url string, f Func)</a>
+							</dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Router.GET">func (r *Router) GET(url string, f Func)</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Router.HEAD">func (r *Router) HEAD(url string, f Func)</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Router.OPTIONS">func (r *Router) OPTIONS(url string, f Func)</a>
+							</dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Router.PATCH">func (r *Router) PATCH(url string, f Func)</a>
+							</dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Router.POST">func (r *Router) POST(url string, f Func)</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Router.PUT">func (r *Router) PUT(url string, f Func)</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Router.TRACE">func (r *Router) TRACE(url string, f Func)</a>
+							</dd>
+
+
+
+							<dd><a href="#Schema">type Schema</a></dd>
+
+
+
+
+							<dd><a href="#Session">type Session</a></dd>
+
+
+
+							<dd>&nbsp; &nbsp; <a href="#Session.Del">func (s *Session) Del(key string)</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Session.Get">func (s *Session) Get(key string) any</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Session.GetSign">func (s *Session) GetSign(ctx *Ctx) (string,
+									error)</a></dd>
+
+
+							<dd>&nbsp; &nbsp; <a href="#Session.Set">func (s *Session) Set(key, value string)</a></dd>
+
+
+
+						</dl>
+					</div><!-- #manual-nav -->
+
+
+
+
+					<h3>Package files</h3>
+					<p>
+						<span style="font-size:90%">
+
+							<a href="/src/github.com/ethoDomingues/braza/app.go">app.go</a>
+
+							<a href="/src/github.com/ethoDomingues/braza/config.go">config.go</a>
+
+							<a href="/src/github.com/ethoDomingues/braza/ctx.go">ctx.go</a>
+
+							<a href="/src/github.com/ethoDomingues/braza/handlers.go">handlers.go</a>
+
+							<a href="/src/github.com/ethoDomingues/braza/header.go">header.go</a>
+
+							<a href="/src/github.com/ethoDomingues/braza/helpers.go">helpers.go</a>
+
+							<a href="/src/github.com/ethoDomingues/braza/jwt.go">jwt.go</a>
+
+							<a href="/src/github.com/ethoDomingues/braza/log.go">log.go</a>
+
+							<a href="/src/github.com/ethoDomingues/braza/matchInfo.go">matchInfo.go</a>
+
+							<a href="/src/github.com/ethoDomingues/braza/request.go">request.go</a>
+
+							<a href="/src/github.com/ethoDomingues/braza/response.go">response.go</a>
+
+							<a href="/src/github.com/ethoDomingues/braza/router.go">router.go</a>
+
+							<a href="/src/github.com/ethoDomingues/braza/routes.go">routes.go</a>
+
+							<a href="/src/github.com/ethoDomingues/braza/schema.go">schema.go</a>
+
+							<a href="/src/github.com/ethoDomingues/braza/session.go">session.go</a>
+
+							<a href="/src/github.com/ethoDomingues/braza/watcher.go">watcher.go</a>
+
+						</span>
+					</p>
+
+				</div><!-- .expanded -->
+			</div><!-- #pkg-index -->
+
+
+
+
+
+			<h2 id="pkg-variables">Variables</h2>
+
+
+			<pre>var (
+    <span id="ErrHttpAbort">ErrHttpAbort</span>        = <a href="/pkg/errors/">errors</a>.<a href="/pkg/errors/#New">New</a>(&#34;abort&#34;)
+    <span id="ErrorNotFound">ErrorNotFound</span>       = <a href="/pkg/errors/">errors</a>.<a href="/pkg/errors/#New">New</a>(&#34;404 Not Found&#34;)
+    <span id="ErrorMethodMismatch">ErrorMethodMismatch</span> = <a href="/pkg/errors/">errors</a>.<a href="/pkg/errors/#New">New</a>(&#34;405 Method Not Allowed&#34;)
+)</pre>
+
+
+
+
+
+			<h2 id="Daemon">func <a href="/src/github.com/ethoDomingues/braza/app.go?s=8295:8326#L386">Daemon</a>
+				<a class="permalink" href="#Daemon">&#xb6;</a>
+
+
+			</h2>
+			<pre>func Daemon(apps ...*<a href="#App">App</a>) <a href="/pkg/builtin/#error">error</a></pre>
+
+
+
+
+
+
+
+			<h2 id="MountSchemaFromRequest">func <a
+					href="/src/github.com/ethoDomingues/braza/schema.go?s=109:179#L3">MountSchemaFromRequest</a>
+				<a class="permalink" href="#MountSchemaFromRequest">&#xb6;</a>
+
+
+			</h2>
+			<pre>func MountSchemaFromRequest(f *<a href="/pkg/github.com/ethoDomingues/c3po/">c3po</a>.<a href="/pkg/github.com/ethoDomingues/c3po/#Fielder">Fielder</a>, rq *<a href="#Request">Request</a>) (<a href="/pkg/builtin/#any">any</a>, <a href="/pkg/builtin/#error">error</a>)</pre>
+
+
+
+
+
+
+
+			<h2 id="TypeOf">func <a href="/src/github.com/ethoDomingues/braza/helpers.go?s=531:558#L21">TypeOf</a>
+				<a class="permalink" href="#TypeOf">&#xb6;</a>
+
+
+			</h2>
+			<pre>func TypeOf(obj <a href="/pkg/builtin/#any">any</a>) <a href="/pkg/builtin/#string">string</a></pre>
+			<p>Alias of &apos;fmt.Sprintf(&quot;%T&quot;, obj)&apos;
+
+
+
+
+
+
+
+
+			<h2 id="App">type <a href="/src/github.com/ethoDomingues/braza/app.go?s=1597:2071#L70">App</a>
+				<a class="permalink" href="#App">&#xb6;</a>
+
+
+			</h2>
+
+			<pre>type App struct {
+    *<a href="#Router">Router</a>
+    *<a href="#Config">Config</a>
+
+<span id="App.BasicAuth"></span>    BasicAuth func(*<a href="#Ctx">Ctx</a>) (user <a href="/pkg/builtin/#string">string</a>, pass <a href="/pkg/builtin/#string">string</a>, ok <a href="/pkg/builtin/#bool">bool</a>) <span class="comment">// custom func to parse Authorization Header</span>
+<span id="App.AfterRequest"></span>    AfterRequest,
+    BeforeRequest,
+    TearDownRequest <a href="#Func">Func</a> <span class="comment">// exec after each request, after send to cleint ( this dont has effect in response)</span>
+
+<span id="App.Srv"></span>    Srv *<a href="/pkg/net/http/">http</a>.<a href="/pkg/net/http/#Server">Server</a>
+    <span class="comment">// contains filtered or unexported fields</span>
+}
+</pre>
+
+
+
+
+
+
+
+
+
+
+
+			<h3 id="NewApp">func <a href="/src/github.com/ethoDomingues/braza/app.go?s=1168:1197#L49">NewApp</a>
+				<a class="permalink" href="#NewApp">&#xb6;</a>
+
+
+			</h3>
+			<pre>func NewApp(cfg *<a href="#Config">Config</a>) *<a href="#App">App</a></pre>
+			<p>Create a new app with a default settings
+
+
+
+
+
+
+
+			<h3 id="App.Build">func (*App) <a
+					href="/src/github.com/ethoDomingues/braza/app.go?s=4233:4270#L189">Build</a>
+				<a class="permalink" href="#App.Build">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (app *<a href="#App">App</a>) Build(addr ...<a href="/pkg/builtin/#string">string</a>)</pre>
+			<p>Build the App, but not start serve
+			<p>example:
+			<pre>func index(ctx braza.Ctx){}
+
+// it&apos;s work
+func main() {
+	app := braza.NewApp()
+	app.GET(&quot;/&quot;,index)
+	app.Build(&quot;:5000&quot;)
+	app.UrlFor(&quot;index&quot;,true)
+}
+// it&apos;s don&apos;t work
+func main() {
+	app := braza.NewApp()
+	app.GET(&quot;/&quot;,index)
+	app.UrlFor(&quot;index&quot;,true)
+}
+</pre>
+
+
+
+
+
+
+			<h3 id="App.ErrorHandler">func (*App) <a
+					href="/src/github.com/ethoDomingues/braza/app.go?s=7911:7963#L371">ErrorHandler</a>
+				<a class="permalink" href="#App.ErrorHandler">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (app *<a href="#App">App</a>) ErrorHandler(statusCode <a href="/pkg/builtin/#int">int</a>, f <a href="#Func">Func</a>)</pre>
+
+
+
+
+
+
+			<h3 id="App.Listen">func (*App) <a
+					href="/src/github.com/ethoDomingues/braza/app.go?s=8069:8119#L378">Listen</a>
+				<a class="permalink" href="#App.Listen">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (app *<a href="#App">App</a>) Listen(host ...<a href="/pkg/builtin/#string">string</a>) (err <a href="/pkg/builtin/#error">error</a>)</pre>
+
+
+
+
+
+
+			<h3 id="App.ListenTLS">func (*App) <a
+					href="/src/github.com/ethoDomingues/braza/app.go?s=8162:8241#L382">ListenTLS</a>
+				<a class="permalink" href="#App.ListenTLS">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (app *<a href="#App">App</a>) ListenTLS(certFile, certKey <a href="/pkg/builtin/#string">string</a>, host ...<a href="/pkg/builtin/#string">string</a>) (err <a href="/pkg/builtin/#error">error</a>)</pre>
+
+
+
+
+
+
+			<h3 id="App.Mount">func (*App) <a
+					href="/src/github.com/ethoDomingues/braza/app.go?s=7580:7621#L360">Mount</a>
+				<a class="permalink" href="#App.Mount">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (app *<a href="#App">App</a>) Mount(routers ...*<a href="#Router">Router</a>)</pre>
+			<p>Register Router in app
+			<pre>func main() {
+	api := braza.NewRouter(&quot;api&quot;)
+	api.post(&quot;/products&quot;)
+	api.get(&quot;/products/{productID:int}&quot;)
+
+	app := braza.NewApp(nil)
+	app.Mount(api)
+	// do anything ...
+	app.Listen()
+}
+</pre>
+
+
+
+
+
+
+			<h3 id="App.ServeHTTP">func (*App) <a
+					href="/src/github.com/ethoDomingues/braza/app.go?s=11438:11506#L548">ServeHTTP</a>
+				<a class="permalink" href="#App.ServeHTTP">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (app *<a href="#App">App</a>) ServeHTTP(wr <a href="/pkg/net/http/">http</a>.<a href="/pkg/net/http/#ResponseWriter">ResponseWriter</a>, req *<a href="/pkg/net/http/">http</a>.<a href="/pkg/net/http/#Request">Request</a>)</pre>
+			<h3 id="hdr-http_Handler">http.Handler</h3>
+
+
+
+
+
+
+			<h3 id="App.UrlFor">func (*App) <a
+					href="/src/github.com/ethoDomingues/braza/app.go?s=11786:11859#L561">UrlFor</a>
+				<a class="permalink" href="#App.UrlFor">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (app *<a href="#App">App</a>) UrlFor(name <a href="/pkg/builtin/#string">string</a>, external <a href="/pkg/builtin/#bool">bool</a>, args ...<a href="/pkg/builtin/#string">string</a>) <a href="/pkg/builtin/#string">string</a></pre>
+			<h3 id="hdr-Url_Builder">Url Builder</h3>
+			<pre>app.GET(&quot;/users/{userID:int}&quot;, index)
+
+app.UrlFor(&quot;index&quot;, false, &quot;userID&quot;, &quot;1&quot;}) //  /users/1
+app.UrlFor(&quot;index&quot;, true, &quot;userID&quot;, &quot;1&quot;}) // http://yourAddress/users/1
+</pre>
+
+
+
+
+
+
+
+
+			<h2 id="Config">type <a href="/src/github.com/ethoDomingues/braza/config.go?s=417:1770#L23">Config</a>
+				<a class="permalink" href="#Config">&#xb6;</a>
+
+
+			</h2>
+
+			<pre>type Config struct {
+<span id="Config.Env"></span>    Env            <a href="/pkg/builtin/#string">string</a> <span class="comment">// environmnt (default &#39;development&#39;)</span>
+<span id="Config.SecretKey"></span>    SecretKey      <a href="/pkg/builtin/#string">string</a> <span class="comment">// for sign session (default &#39;&#39;)</span>
+<span id="Config.Servername"></span>    Servername     <a href="/pkg/builtin/#string">string</a> <span class="comment">// for build url routes and route match (default &#39;&#39;)</span>
+<span id="Config.ListeningInTLS"></span>    ListeningInTLS <a href="/pkg/builtin/#bool">bool</a>   <span class="comment">// UrlFor return a URl with schema in &#34;https:&#34; (default &#39;false&#39;)</span>
+
+<span id="Config.TemplateFolder"></span>    TemplateFolder          <a href="/pkg/builtin/#string">string</a> <span class="comment">// for render Templates Html. Default &#34;templates/&#34;</span>
+<span id="Config.TemplateFuncs"></span>    TemplateFuncs           <a href="/pkg/html/template/">template</a>.<a href="/pkg/html/template/#FuncMap">FuncMap</a>
+<span id="Config.DisableParseFormBody"></span>    DisableParseFormBody    <a href="/pkg/builtin/#bool">bool</a> <span class="comment">// Disable default parse of Request.Form -&gt; if true, use Request.ParseForm()</span>
+<span id="Config.DisableTemplateReloader"></span>    DisableTemplateReloader <a href="/pkg/builtin/#bool">bool</a> <span class="comment">// if app in dev mode, disable template&#39;s reload (default false)</span>
+
+<span id="Config.StaticFolder"></span>    StaticFolder  <a href="/pkg/builtin/#string">string</a> <span class="comment">// for serve static files (default &#39;/assets&#39;)</span>
+<span id="Config.StaticUrlPath"></span>    StaticUrlPath <a href="/pkg/builtin/#string">string</a> <span class="comment">// url uf request static file (default &#39;/assets&#39;)</span>
+<span id="Config.DisableStatic"></span>    DisableStatic <a href="/pkg/builtin/#bool">bool</a>   <span class="comment">// disable static endpoint for serving static files (default false)</span>
+
+<span id="Config.Silent"></span>    Silent             <a href="/pkg/builtin/#bool">bool</a>   <span class="comment">// don&#39;t print logs (default false)</span>
+<span id="Config.LogFile"></span>    LogFile            <a href="/pkg/builtin/#string">string</a> <span class="comment">// save log info in file (default &#39;&#39;)</span>
+<span id="Config.DotenvFileName"></span>    DotenvFileName     <a href="/pkg/builtin/#string">string</a>
+<span id="Config.DisableFileWatcher"></span>    DisableFileWatcher <a href="/pkg/builtin/#bool">bool</a> <span class="comment">// disable autoreload in dev mode (default false)</span>
+
+<span id="Config.SessionExpires"></span>    SessionExpires          <a href="/pkg/time/">time</a>.<a href="/pkg/time/#Duration">Duration</a> <span class="comment">// (default 30 minutes)</span>
+<span id="Config.SessionPermanentExpires"></span>    SessionPermanentExpires <a href="/pkg/time/">time</a>.<a href="/pkg/time/#Duration">Duration</a> <span class="comment">// (default 31 days)</span>
+
+<span id="Config.SessionPublicKey"></span>    SessionPublicKey  *<a href="/pkg/crypto/rsa/">rsa</a>.<a href="/pkg/crypto/rsa/#PublicKey">PublicKey</a>
+<span id="Config.SessionPrivateKey"></span>    SessionPrivateKey *<a href="/pkg/crypto/rsa/">rsa</a>.<a href="/pkg/crypto/rsa/#PrivateKey">PrivateKey</a>
+    <span class="comment">// contains filtered or unexported fields</span>
+}
+</pre>
+
+
+
+
+
+
+
+
+
+
+
+			<h3 id="NewConfig">func <a href="/src/github.com/ethoDomingues/braza/config.go?s=370:394#L21">NewConfig</a>
+				<a class="permalink" href="#NewConfig">&#xb6;</a>
+
+
+			</h3>
+			<pre>func NewConfig() *<a href="#Config">Config</a></pre>
+			<p>Usage:
+			<pre>env := &quot;dev&quot;
+devConfig := braza.NewConfig()
+prodConfig := braza.NewConfig()
+var cfg  *Config
+
+if env == &quot;dev&quot;{
+	cfg = devConfig
+} else {
+	cfg = prodConfig
+}
+app := braza.NewApp(cfg)
+...
+</pre>
+
+
+
+
+
+
+
+			<h3 id="Config.SetupFromFile">func (*Config) <a
+					href="/src/github.com/ethoDomingues/braza/config.go?s=2469:2522#L86">SetupFromFile</a>
+				<a class="permalink" href="#Config.SetupFromFile">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (c *<a href="#Config">Config</a>) SetupFromFile(filename <a href="/pkg/builtin/#string">string</a>) <a href="/pkg/builtin/#error">error</a></pre>
+			<p>setup config from json, yalm
+
+
+
+
+
+
+
+
+			<h2 id="Cors">type <a href="/src/github.com/ethoDomingues/braza/header.go?s=1021:1482#L35">Cors</a>
+				<a class="permalink" href="#Cors">&#xb6;</a>
+
+
+			</h2>
+			<p>If present on route or router, allows resource sharing between origins
+
+			<pre>type Cors struct {
+<span id="Cors.MaxAge"></span>    MaxAge           <a href="/pkg/builtin/#string">string</a>   <span class="comment">// Access-Control-Max-Age</span>
+<span id="Cors.AllowOrigins"></span>    AllowOrigins     []<a href="/pkg/builtin/#string">string</a> <span class="comment">// Access-Control-Allow-Origin</span>
+<span id="Cors.AllowMethods"></span>    AllowMethods     []<a href="/pkg/builtin/#string">string</a> <span class="comment">// Access-Control-Allow-Methods</span>
+<span id="Cors.AllowHeaders"></span>    AllowHeaders     []<a href="/pkg/builtin/#string">string</a> <span class="comment">// Access-Control-Allow-Headers</span>
+<span id="Cors.ExposeHeaders"></span>    ExposeHeaders    []<a href="/pkg/builtin/#string">string</a> <span class="comment">// Access-Control-Expose-Headers</span>
+<span id="Cors.RequestMethod"></span>    RequestMethod    <a href="/pkg/builtin/#string">string</a>   <span class="comment">// Access-Control-Request-Method</span>
+<span id="Cors.AllowCredentials"></span>    AllowCredentials <a href="/pkg/builtin/#bool">bool</a>     <span class="comment">// Access-Control-Allow-Credentials</span>
+    <span class="comment">// contains filtered or unexported fields</span>
+}
+</pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			<h2 id="Ctx">type <a href="/src/github.com/ethoDomingues/braza/ctx.go?s=581:1080#L25">Ctx</a>
+				<a class="permalink" href="#Ctx">&#xb6;</a>
+
+
+			</h2>
+
+			<pre>type Ctx struct {
+<span id="Ctx.App"></span>    App     *<a href="#App">App</a>           <span class="comment">// Clone Current App</span>
+<span id="Ctx.Global"></span>    Global  map[<a href="/pkg/builtin/#string">string</a>]<a href="/pkg/builtin/#any">any</a> <span class="comment">// global variables of current request</span>
+<span id="Ctx.Session"></span>    Session *<a href="#Session">Session</a>       <span class="comment">// Current Cookie Session</span>
+
+    *<a href="#Response">Response</a>          <span class="comment">// Current Response</span>
+<span id="Ctx.Request"></span>    Request   *<a href="#Request">Request</a> <span class="comment">// Current Request</span>
+
+    <span class="comment">// New Schema valid from route schema</span>
+<span id="Ctx.Schema"></span>    Schema        <a href="#Schema">Schema</a>
+<span id="Ctx.SchemaFielder"></span>    SchemaFielder *<a href="/pkg/github.com/ethoDomingues/c3po/">c3po</a>.<a href="/pkg/github.com/ethoDomingues/c3po/#Fielder">Fielder</a>
+
+    <span class="comment">// Contains information about the current request, route, etc...</span>
+<span id="Ctx.MatchInfo"></span>    MatchInfo *<a href="#MatchInfo">MatchInfo</a>
+    <span class="comment">// contains filtered or unexported fields</span>
+}
+</pre>
+
+
+
+
+
+
+
+
+
+
+
+			<h3 id="NewCtx">func <a href="/src/github.com/ethoDomingues/braza/ctx.go?s=174:242#L5">NewCtx</a>
+				<a class="permalink" href="#NewCtx">&#xb6;</a>
+
+
+			</h3>
+			<pre>func NewCtx(app *<a href="#App">App</a>, wr <a href="/pkg/net/http/">http</a>.<a href="/pkg/net/http/#ResponseWriter">ResponseWriter</a>, rq *<a href="/pkg/net/http/">http</a>.<a href="/pkg/net/http/#Request">Request</a>) *<a href="#Ctx">Ctx</a></pre>
+			<p>Returns a new *braza.Ctx
+
+
+
+
+
+
+
+			<h3 id="Ctx.Next">func (*Ctx) <a href="/src/github.com/ethoDomingues/braza/ctx.go?s=1329:1351#L55">Next</a>
+				<a class="permalink" href="#Ctx.Next">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (ctx *<a href="#Ctx">Ctx</a>) Next()</pre>
+			<p>executes the next middleware or main function of the request
+
+
+
+
+
+
+			<h3 id="Ctx.UrlFor">func (*Ctx) <a
+					href="/src/github.com/ethoDomingues/braza/ctx.go?s=1517:1590#L67">UrlFor</a>
+				<a class="permalink" href="#Ctx.UrlFor">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (ctx *<a href="#Ctx">Ctx</a>) UrlFor(name <a href="/pkg/builtin/#string">string</a>, external <a href="/pkg/builtin/#bool">bool</a>, args ...<a href="/pkg/builtin/#string">string</a>) <a href="/pkg/builtin/#string">string</a></pre>
+
+
+
+
+
+
+
+
+			<h2 id="File">type <a href="/src/github.com/ethoDomingues/braza/request.go?s=485:593#L25">File</a>
+				<a class="permalink" href="#File">&#xb6;</a>
+
+
+			</h2>
+
+			<pre>type File struct {
+<span id="File.Filename"></span>    Filename     <a href="/pkg/builtin/#string">string</a>
+<span id="File.ContentType"></span>    ContentType  <a href="/pkg/builtin/#string">string</a>
+<span id="File.ContentLeght"></span>    ContentLeght <a href="/pkg/builtin/#int">int</a>
+<span id="File.Stream"></span>    Stream       *<a href="/pkg/bytes/">bytes</a>.<a href="/pkg/bytes/#Buffer">Buffer</a>
+}
+</pre>
+
+
+
+
+
+
+
+
+
+
+
+			<h3 id="NewFile">func <a href="/src/github.com/ethoDomingues/braza/request.go?s=206:243#L10">NewFile</a>
+				<a class="permalink" href="#NewFile">&#xb6;</a>
+
+
+			</h3>
+			<pre>func NewFile(p *<a href="/pkg/mime/multipart/">multipart</a>.<a href="/pkg/mime/multipart/#Part">Part</a>) *<a href="#File">File</a></pre>
+
+
+
+
+
+
+
+
+
+			<h2 id="Func">type <a href="/src/github.com/ethoDomingues/braza/routes.go?s=108:132#L3">Func</a>
+				<a class="permalink" href="#Func">&#xb6;</a>
+
+
+			</h2>
+
+			<pre>type Func func(ctx *<a href="#Ctx">Ctx</a>)</pre>
+
+
+
+
+
+
+
+
+
+
+
+			<h3 id="Handler">func <a href="/src/github.com/ethoDomingues/braza/routes.go?s=7938:7971#L410">Handler</a>
+				<a class="permalink" href="#Handler">&#xb6;</a>
+
+
+			</h3>
+			<pre>func Handler(h <a href="/pkg/net/http/">http</a>.<a href="/pkg/net/http/#Handler">Handler</a>) <a href="#Func">Func</a></pre>
+
+
+
+
+
+
+
+			<h3 id="Func.String">func (Func) <a
+					href="/src/github.com/ethoDomingues/braza/routes.go?s=134:163#L5">String</a>
+				<a class="permalink" href="#Func.String">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (f <a href="#Func">Func</a>) String() <a href="/pkg/builtin/#string">string</a></pre>
+
+
+
+
+
+
+
+
+			<h2 id="Header">type <a href="/src/github.com/ethoDomingues/braza/header.go?s=67:90#L1">Header</a>
+				<a class="permalink" href="#Header">&#xb6;</a>
+
+
+			</h2>
+
+			<pre>type Header <a href="/pkg/net/http/">http</a>.<a href="/pkg/net/http/#Header">Header</a></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+			<h3 id="Header.Add">func (*Header) <a
+					href="/src/github.com/ethoDomingues/braza/header.go?s=278:324#L7">Add</a>
+				<a class="permalink" href="#Header.Add">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (h *<a href="#Header">Header</a>) Add(key <a href="/pkg/builtin/#string">string</a>, value <a href="/pkg/builtin/#string">string</a>)</pre>
+			<p>Add value in a in Header Key. If the key does not exist, it is created
+
+
+
+
+
+
+			<h3 id="Header.Del">func (*Header) <a
+					href="/src/github.com/ethoDomingues/braza/header.go?s=545:577#L16">Del</a>
+				<a class="permalink" href="#Header.Del">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (h *<a href="#Header">Header</a>) Del(key <a href="/pkg/builtin/#string">string</a>)</pre>
+
+
+
+
+
+
+			<h3 id="Header.Get">func (*Header) <a
+					href="/src/github.com/ethoDomingues/braza/header.go?s=456:495#L12">Get</a>
+				<a class="permalink" href="#Header.Get">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (h *<a href="#Header">Header</a>) Get(key <a href="/pkg/builtin/#string">string</a>) <a href="/pkg/builtin/#string">string</a></pre>
+			<p>Return a value of Header Key. If the key does not exist, return a empty string
+
+
+
+
+
+
+			<h3 id="Header.Save">func (*Header) <a
+					href="/src/github.com/ethoDomingues/braza/header.go?s=835:879#L28">Save</a>
+				<a class="permalink" href="#Header.Save">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (h *<a href="#Header">Header</a>) Save(w <a href="/pkg/net/http/">http</a>.<a href="/pkg/net/http/#ResponseWriter">ResponseWriter</a>)</pre>
+			<p>Write the headers in the response
+
+
+
+
+
+
+			<h3 id="Header.Set">func (*Header) <a
+					href="/src/github.com/ethoDomingues/braza/header.go?s=108:154#L2">Set</a>
+				<a class="permalink" href="#Header.Set">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (h *<a href="#Header">Header</a>) Set(key <a href="/pkg/builtin/#string">string</a>, value <a href="/pkg/builtin/#string">string</a>)</pre>
+			<p>Set a Header
+
+
+
+
+
+
+			<h3 id="Header.SetCookie">func (*Header) <a
+					href="/src/github.com/ethoDomingues/braza/header.go?s=681:728#L21">SetCookie</a>
+				<a class="permalink" href="#Header.SetCookie">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (h *<a href="#Header">Header</a>) SetCookie(cookie *<a href="/pkg/net/http/">http</a>.<a href="/pkg/net/http/#Cookie">Cookie</a>)</pre>
+			<p>Set a Cookie. Has the same effect as &apos;Response.SetCookie&apos;
+
+
+
+
+
+
+
+
+			<h2 id="MapCtrl">type <a href="/src/github.com/ethoDomingues/braza/routes.go?s=619:648#L33">MapCtrl</a>
+				<a class="permalink" href="#MapCtrl">&#xb6;</a>
+
+
+			</h2>
+
+			<pre>type MapCtrl map[<a href="/pkg/builtin/#string">string</a>]*<a href="#Meth">Meth</a></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			<h2 id="MatchInfo">type <a
+					href="/src/github.com/ethoDomingues/braza/matchInfo.go?s=230:359#L6">MatchInfo</a>
+				<a class="permalink" href="#MatchInfo">&#xb6;</a>
+
+
+			</h2>
+
+			<pre>type MatchInfo struct {
+    <a href="#Func">Func</a>
+<span id="MatchInfo.Match"></span>    Match            <a href="/pkg/builtin/#bool">bool</a>
+<span id="MatchInfo.Route"></span>    Route            *<a href="#Route">Route</a>
+<span id="MatchInfo.Router"></span>    Router           *<a href="#Router">Router</a>
+<span id="MatchInfo.MethodNotAllowed"></span>    MethodNotAllowed <a href="/pkg/builtin/#error">error</a>
+}
+</pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			<h2 id="Meth">type <a href="/src/github.com/ethoDomingues/braza/routes.go?s=554:617#L27">Meth</a>
+				<a class="permalink" href="#Meth">&#xb6;</a>
+
+
+			</h2>
+
+			<pre>type Meth struct {
+    <a href="#Func">Func</a>
+    <a href="#Schema">Schema</a>
+<span id="Meth.SchemaFielder"></span>    SchemaFielder *<a href="/pkg/github.com/ethoDomingues/c3po/">c3po</a>.<a href="/pkg/github.com/ethoDomingues/c3po/#Fielder">Fielder</a>
+}
+</pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			<h2 id="Request">type <a href="/src/github.com/ethoDomingues/braza/request.go?s=1332:1858#L65">Request</a>
+				<a class="permalink" href="#Request">&#xb6;</a>
+
+
+			</h2>
+
+			<pre>type Request struct {
+<span id="Request.Header"></span>    Header <a href="#Header">Header</a>
+
+<span id="Request.Body"></span>    Body *<a href="/pkg/bytes/">bytes</a>.<a href="/pkg/bytes/#Buffer">Buffer</a>
+<span id="Request.Method"></span>    Method,
+    RemoteAddr,
+    RequestURI,
+    ContentType <a href="/pkg/builtin/#string">string</a>
+
+<span id="Request.ContentLength"></span>    ContentLength <a href="/pkg/builtin/#int">int</a>
+
+<span id="Request.URL"></span>    URL     *<a href="/pkg/net/url/">url</a>.<a href="/pkg/net/url/#URL">URL</a>
+<span id="Request.Host"></span>    Host    <a href="/pkg/builtin/#string">string</a>
+<span id="Request.Port"></span>    Port    <a href="/pkg/builtin/#string">string</a>
+<span id="Request.Form"></span>    Form    map[<a href="/pkg/builtin/#string">string</a>]<a href="/pkg/builtin/#any">any</a>
+<span id="Request.Args"></span>    Args    map[<a href="/pkg/builtin/#string">string</a>]<a href="/pkg/builtin/#string">string</a>
+<span id="Request.Mime"></span>    Mime    map[<a href="/pkg/builtin/#string">string</a>]<a href="/pkg/builtin/#string">string</a>
+<span id="Request.Query"></span>    Query   <a href="/pkg/net/url/">url</a>.<a href="/pkg/net/url/#Values">Values</a>
+<span id="Request.Files"></span>    Files   map[<a href="/pkg/builtin/#string">string</a>][]*<a href="#File">File</a>
+<span id="Request.Cookies"></span>    Cookies map[<a href="/pkg/builtin/#string">string</a>]*<a href="/pkg/net/http/">http</a>.<a href="/pkg/net/http/#Cookie">Cookie</a>
+
+<span id="Request.TransferEncoding"></span>    TransferEncoding []<a href="/pkg/builtin/#string">string</a>
+
+<span id="Request.Proto"></span>    Proto      <a href="/pkg/builtin/#string">string</a> <span class="comment">// &#34;HTTP/1.0&#34;</span>
+<span id="Request.ProtoMajor"></span>    ProtoMajor <a href="/pkg/builtin/#int">int</a>    <span class="comment">// 1</span>
+<span id="Request.ProtoMinor"></span>    ProtoMinor <a href="/pkg/builtin/#int">int</a>    <span class="comment">// 0</span>
+    <span class="comment">// contains filtered or unexported fields</span>
+}
+</pre>
+
+
+
+
+
+
+
+
+
+
+
+			<h3 id="NewRequest">func <a
+					href="/src/github.com/ethoDomingues/braza/request.go?s=595:648#L32">NewRequest</a>
+				<a class="permalink" href="#NewRequest">&#xb6;</a>
+
+
+			</h3>
+			<pre>func NewRequest(req *<a href="/pkg/net/http/">http</a>.<a href="/pkg/net/http/#Request">Request</a>, ctx *<a href="#Ctx">Ctx</a>) *<a href="#Request">Request</a></pre>
+
+
+
+
+
+
+
+			<h3 id="Request.BasicAuth">func (*Request) <a
+					href="/src/github.com/ethoDomingues/braza/request.go?s=5974:6040#L257">BasicAuth</a>
+				<a class="permalink" href="#Request.BasicAuth">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Request">Request</a>) BasicAuth() (username, password <a href="/pkg/builtin/#string">string</a>, ok <a href="/pkg/builtin/#bool">bool</a>)</pre>
+
+
+
+
+
+
+			<h3 id="Request.Clone">func (*Request) <a
+					href="/src/github.com/ethoDomingues/braza/request.go?s=5618:5671#L247">Clone</a>
+				<a class="permalink" href="#Request.Clone">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Request">Request</a>) Clone(ctx <a href="/pkg/context/">context</a>.<a href="/pkg/context/#Context">Context</a>) *<a href="#Request">Request</a></pre>
+
+
+
+
+
+
+			<h3 id="Request.Context">func (*Request) <a
+					href="/src/github.com/ethoDomingues/braza/request.go?s=5285:5328#L243">Context</a>
+				<a class="permalink" href="#Request.Context">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Request">Request</a>) Context() <a href="/pkg/context/">context</a>.<a href="/pkg/context/#Context">Context</a></pre>
+
+
+
+
+
+
+			<h3 id="Request.Ctx">func (*Request) <a
+					href="/src/github.com/ethoDomingues/braza/request.go?s=5214:5242#L242">Ctx</a>
+				<a class="permalink" href="#Request.Ctx">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Request">Request</a>) Ctx() *<a href="#Ctx">Ctx</a></pre>
+
+
+
+
+
+
+			<h3 id="Request.ParseForm">func (*Request) <a
+					href="/src/github.com/ethoDomingues/braza/request.go?s=2711:2740#L138">ParseForm</a>
+				<a class="permalink" href="#Request.ParseForm">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Request">Request</a>) ParseForm()</pre>
+
+
+
+
+
+
+			<h3 id="Request.ProtoAtLeast">func (*Request) <a
+					href="/src/github.com/ethoDomingues/braza/request.go?s=5834:5887#L252">ProtoAtLeast</a>
+				<a class="permalink" href="#Request.ProtoAtLeast">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Request">Request</a>) ProtoAtLeast(major, minor <a href="/pkg/builtin/#int">int</a>) <a href="/pkg/builtin/#bool">bool</a></pre>
+
+
+
+
+
+
+			<h3 id="Request.RawRequest">func (*Request) <a
+					href="/src/github.com/ethoDomingues/braza/request.go?s=5547:5591#L246">RawRequest</a>
+				<a class="permalink" href="#Request.RawRequest">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Request">Request</a>) RawRequest() *<a href="/pkg/net/http/">http</a>.<a href="/pkg/net/http/#Request">Request</a></pre>
+
+
+
+
+
+
+			<h3 id="Request.Referer">func (*Request) <a
+					href="/src/github.com/ethoDomingues/braza/request.go?s=5458:5492#L245">Referer</a>
+				<a class="permalink" href="#Request.Referer">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Request">Request</a>) Referer() <a href="/pkg/builtin/#string">string</a></pre>
+
+
+
+
+
+
+			<h3 id="Request.RequestURL">func (*Request) <a
+					href="/src/github.com/ethoDomingues/braza/request.go?s=4247:4284#L201">RequestURL</a>
+				<a class="permalink" href="#Request.RequestURL">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Request">Request</a>) RequestURL() <a href="/pkg/builtin/#string">string</a></pre>
+			<p>Returns the current url
+
+
+
+
+
+
+			<h3 id="Request.UrlFor">func (*Request) <a
+					href="/src/github.com/ethoDomingues/braza/request.go?s=5083:5158#L238">UrlFor</a>
+				<a class="permalink" href="#Request.UrlFor">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Request">Request</a>) UrlFor(name <a href="/pkg/builtin/#string">string</a>, external <a href="/pkg/builtin/#bool">bool</a>, args ...<a href="/pkg/builtin/#string">string</a>) <a href="/pkg/builtin/#string">string</a></pre>
+			<p>URL Builder
+			<pre>app.GET(&quot;/&quot;, index)
+app.GET(&quot;/login&quot;, login)
+
+app.UrlFor(&quot;login&quot;, false, &quot;next&quot;, &quot;currentUrl&quot;})
+// results: /login?next=currentUrl
+
+app.UrlFor(&quot;login&quot;, true, &quot;token&quot;, &quot;foobar&quot;})
+// results: http://yourAddress/login?token=foobar
+
+// example
+func index(ctx *braza.Ctx) {
+	req := ctx.Request
+	rsp := ctx.Response
+	userID, ok := ctx.Global[&quot;user&quot;]
+	if !ok {
+		next := r.RequestUrl()
+		rsp.Redirect(req.UrlFor(&quot;login&quot;, true, &quot;next&quot;, next))
+		//  redirect to: http://youraddress/login?next=http://yourhost:port/
+	}
+	... you code here
+}
+</pre>
+
+
+
+
+
+
+			<h3 id="Request.UserAgent">func (*Request) <a
+					href="/src/github.com/ethoDomingues/braza/request.go?s=5366:5402#L244">UserAgent</a>
+				<a class="permalink" href="#Request.UserAgent">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Request">Request</a>) UserAgent() <a href="/pkg/builtin/#string">string</a></pre>
+
+
+
+
+
+
+			<h3 id="Request.Websocket">func (*Request) <a
+					href="/src/github.com/ethoDomingues/braza/request.go?s=6144:6198#L264">Websocket</a>
+				<a class="permalink" href="#Request.Websocket">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Request">Request</a>) Websocket() (*<a href="/pkg/github.com/gorilla/websocket/">websocket</a>.<a href="/pkg/github.com/gorilla/websocket/#Conn">Conn</a>, <a href="/pkg/builtin/#error">error</a>)</pre>
+
+
+
+
+
+
+			<h3 id="Request.WithContext">func (*Request) <a
+					href="/src/github.com/ethoDomingues/braza/request.go?s=5719:5778#L248">WithContext</a>
+				<a class="permalink" href="#Request.WithContext">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Request">Request</a>) WithContext(ctx <a href="/pkg/context/">context</a>.<a href="/pkg/context/#Context">Context</a>) *<a href="#Request">Request</a></pre>
+
+
+
+
+
+
+
+
+			<h2 id="Response">type <a href="/src/github.com/ethoDomingues/braza/response.go?s=437:560#L25">Response</a>
+				<a class="permalink" href="#Response">&#xb6;</a>
+
+
+			</h2>
+
+			<pre>type Response struct {
+    *<a href="/pkg/bytes/">bytes</a>.<a href="/pkg/bytes/#Buffer">Buffer</a>
+<span id="Response.StatusCode"></span>    StatusCode <a href="/pkg/builtin/#int">int</a>
+<span id="Response.Headers"></span>    Headers    <a href="#Header">Header</a>
+    <span class="comment">// contains filtered or unexported fields</span>
+}
+</pre>
+
+
+
+
+
+
+
+
+
+
+
+			<h3 id="NewResponse">func <a
+					href="/src/github.com/ethoDomingues/braza/response.go?s=228:288#L15">NewResponse</a>
+				<a class="permalink" href="#NewResponse">&#xb6;</a>
+
+
+			</h3>
+			<pre>func NewResponse(wr <a href="/pkg/net/http/">http</a>.<a href="/pkg/net/http/#ResponseWriter">ResponseWriter</a>, ctx *<a href="#Ctx">Ctx</a>) *<a href="#Response">Response</a></pre>
+
+
+
+
+
+
+
+			<h3 id="Response.Abort">func (*Response) <a
+					href="/src/github.com/ethoDomingues/braza/response.go?s=3509:3543#L148">Abort</a>
+				<a class="permalink" href="#Response.Abort">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Response">Response</a>) Abort(code <a href="/pkg/builtin/#int">int</a>)</pre>
+
+
+
+
+
+
+			<h3 id="Response.BadRequest">func (*Response) <a
+					href="/src/github.com/ethoDomingues/braza/response.go?s=3819:3850#L153">BadRequest</a>
+				<a class="permalink" href="#Response.BadRequest">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Response">Response</a>) BadRequest()</pre>
+
+
+
+
+
+
+			<h3 id="Response.CheckErr">func (*Response) <a
+					href="/src/github.com/ethoDomingues/braza/response.go?s=5243:5281#L203">CheckErr</a>
+				<a class="permalink" href="#Response.CheckErr">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Response">Response</a>) CheckErr(err <a href="/pkg/builtin/#error">error</a>)</pre>
+			<p>if err != nil, return a 500 Intenal Server Error
+
+
+
+
+
+
+			<h3 id="Response.Close">func (*Response) <a
+					href="/src/github.com/ethoDomingues/braza/response.go?s=3571:3597#L149">Close</a>
+				<a class="permalink" href="#Response.Close">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Response">Response</a>) Close()</pre>
+
+
+
+
+
+
+			<h3 id="Response.Created">func (*Response) <a
+					href="/src/github.com/ethoDomingues/braza/response.go?s=3697:3725#L151">Created</a>
+				<a class="permalink" href="#Response.Created">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Response">Response</a>) Created()</pre>
+
+
+
+
+
+
+			<h3 id="Response.Forbidden">func (*Response) <a
+					href="/src/github.com/ethoDomingues/braza/response.go?s=3941:3971#L155">Forbidden</a>
+				<a class="permalink" href="#Response.Forbidden">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Response">Response</a>) Forbidden()</pre>
+
+
+
+
+
+
+			<h3 id="Response.HTML">func (*Response) <a
+					href="/src/github.com/ethoDomingues/braza/response.go?s=3347:3390#L140">HTML</a>
+				<a class="permalink" href="#Response.HTML">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Response">Response</a>) HTML(body <a href="/pkg/builtin/#any">any</a>, code <a href="/pkg/builtin/#int">int</a>)</pre>
+
+
+
+
+
+
+			<h3 id="Response.Header">func (Response) <a
+					href="/src/github.com/ethoDomingues/braza/response.go?s=562:600#L33">Header</a>
+				<a class="permalink" href="#Response.Header">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r <a href="#Response">Response</a>) Header() <a href="/pkg/net/http/">http</a>.<a href="/pkg/net/http/#Header">Header</a></pre>
+
+
+
+
+
+
+			<h3 id="Response.Hijack">func (*Response) <a
+					href="/src/github.com/ethoDomingues/braza/response.go?s=887:951#L37">Hijack</a>
+				<a class="permalink" href="#Response.Hijack">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Response">Response</a>) Hijack() (<a href="/pkg/net/">net</a>.<a href="/pkg/net/#Conn">Conn</a>, *<a href="/pkg/bufio/">bufio</a>.<a href="/pkg/bufio/#ReadWriter">ReadWriter</a>, <a href="/pkg/builtin/#error">error</a>)</pre>
+
+
+
+
+
+
+			<h3 id="Response.ImATaerpot">func (*Response) <a
+					href="/src/github.com/ethoDomingues/braza/response.go?s=4124:4155#L158">ImATaerpot</a>
+				<a class="permalink" href="#Response.ImATaerpot">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Response">Response</a>) ImATaerpot()</pre>
+
+
+
+
+
+
+			<h3 id="Response.InternalServerError">func (*Response) <a
+					href="/src/github.com/ethoDomingues/braza/response.go?s=4185:4225#L159">InternalServerError</a>
+				<a class="permalink" href="#Response.InternalServerError">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Response">Response</a>) InternalServerError()</pre>
+
+
+
+
+
+
+			<h3 id="Response.JSON">func (*Response) <a
+					href="/src/github.com/ethoDomingues/braza/response.go?s=2705:2748#L105">JSON</a>
+				<a class="permalink" href="#Response.JSON">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Response">Response</a>) JSON(body <a href="/pkg/builtin/#any">any</a>, code <a href="/pkg/builtin/#int">int</a>)</pre>
+
+
+
+
+
+
+			<h3 id="Response.MethodNotAllowed">func (*Response) <a
+					href="/src/github.com/ethoDomingues/braza/response.go?s=4063:4100#L157">MethodNotAllowed</a>
+				<a class="permalink" href="#Response.MethodNotAllowed">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Response">Response</a>) MethodNotAllowed()</pre>
+
+
+
+
+
+
+			<h3 id="Response.NoContent">func (*Response) <a
+					href="/src/github.com/ethoDomingues/braza/response.go?s=3758:3788#L152">NoContent</a>
+				<a class="permalink" href="#Response.NoContent">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Response">Response</a>) NoContent()</pre>
+
+
+
+
+
+
+			<h3 id="Response.NotFound">func (*Response) <a
+					href="/src/github.com/ethoDomingues/braza/response.go?s=4002:4031#L156">NotFound</a>
+				<a class="permalink" href="#Response.NotFound">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Response">Response</a>) NotFound()</pre>
+
+
+
+
+
+
+			<h3 id="Response.Ok">func (*Response) <a
+					href="/src/github.com/ethoDomingues/braza/response.go?s=3636:3659#L150">Ok</a>
+				<a class="permalink" href="#Response.Ok">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Response">Response</a>) Ok()</pre>
+
+
+
+
+
+
+			<h3 id="Response.Redirect">func (*Response) <a
+					href="/src/github.com/ethoDomingues/braza/response.go?s=2432:2471#L95">Redirect</a>
+				<a class="permalink" href="#Response.Redirect">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Response">Response</a>) Redirect(url <a href="/pkg/builtin/#string">string</a>)</pre>
+			<p>Redirect to Following URL
+
+
+
+
+
+
+			<h3 id="Response.RenderTemplate">func (*Response) <a
+					href="/src/github.com/ethoDomingues/braza/response.go?s=4247:4306#L161">RenderTemplate</a>
+				<a class="permalink" href="#Response.RenderTemplate">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Response">Response</a>) RenderTemplate(tmpl <a href="/pkg/builtin/#string">string</a>, data ...<a href="/pkg/builtin/#any">any</a>)</pre>
+
+
+
+
+
+
+			<h3 id="Response.ServeFile">func (*Response) <a
+					href="/src/github.com/ethoDomingues/braza/response.go?s=5430:5477#L214">ServeFile</a>
+				<a class="permalink" href="#Response.ServeFile">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Response">Response</a>) ServeFile(pathToFile <a href="/pkg/builtin/#string">string</a>)</pre>
+			<p>Serve File
+
+
+
+
+
+
+			<h3 id="Response.SetCookie">func (*Response) <a
+					href="/src/github.com/ethoDomingues/braza/response.go?s=805:854#L36">SetCookie</a>
+				<a class="permalink" href="#Response.SetCookie">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Response">Response</a>) SetCookie(cookie *<a href="/pkg/net/http/">http</a>.<a href="/pkg/net/http/#Cookie">Cookie</a>)</pre>
+
+
+
+
+
+
+			<h3 id="Response.TEXT">func (*Response) <a
+					href="/src/github.com/ethoDomingues/braza/response.go?s=3184:3227#L132">TEXT</a>
+				<a class="permalink" href="#Response.TEXT">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Response">Response</a>) TEXT(body <a href="/pkg/builtin/#any">any</a>, code <a href="/pkg/builtin/#int">int</a>)</pre>
+
+
+
+
+
+
+			<h3 id="Response.Unauthorized">func (*Response) <a
+					href="/src/github.com/ethoDomingues/braza/response.go?s=3880:3913#L154">Unauthorized</a>
+				<a class="permalink" href="#Response.Unauthorized">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Response">Response</a>) Unauthorized()</pre>
+
+
+
+
+
+
+			<h3 id="Response.Write">func (Response) <a
+					href="/src/github.com/ethoDomingues/braza/response.go?s=646:692#L34">Write</a>
+				<a class="permalink" href="#Response.Write">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r <a href="#Response">Response</a>) Write(b []<a href="/pkg/builtin/#byte">byte</a>) (<a href="/pkg/builtin/#int">int</a>, <a href="/pkg/builtin/#error">error</a>)</pre>
+
+
+
+
+
+
+			<h3 id="Response.WriteHeader">func (Response) <a
+					href="/src/github.com/ethoDomingues/braza/response.go?s=725:770#L35">WriteHeader</a>
+				<a class="permalink" href="#Response.WriteHeader">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r <a href="#Response">Response</a>) WriteHeader(statusCode <a href="/pkg/builtin/#int">int</a>)</pre>
+
+
+
+
+
+
+
+
+			<h2 id="Route">type <a href="/src/github.com/ethoDomingues/braza/routes.go?s=650:967#L35">Route</a>
+				<a class="permalink" href="#Route">&#xb6;</a>
+
+
+			</h2>
+
+			<pre>type Route struct {
+<span id="Route.Url"></span>    Url  <a href="/pkg/builtin/#string">string</a>
+<span id="Route.Name"></span>    Name <a href="/pkg/builtin/#string">string</a>
+
+<span id="Route.Func"></span>    Func        <a href="#Func">Func</a>
+<span id="Route.Methods"></span>    Methods     []<a href="/pkg/builtin/#string">string</a>
+<span id="Route.Cors"></span>    Cors        *<a href="#Cors">Cors</a>
+<span id="Route.Schema"></span>    Schema      <a href="#Schema">Schema</a>
+<span id="Route.MapCtrl"></span>    MapCtrl     <a href="#MapCtrl">MapCtrl</a>
+<span id="Route.Middlewares"></span>    Middlewares []<a href="#Func">Func</a>
+    <span class="comment">// contains filtered or unexported fields</span>
+}
+</pre>
+
+
+
+
+
+
+
+
+
+
+
+			<h3 id="CONNECT">func <a href="/src/github.com/ethoDomingues/braza/routes.go?s=7318:7357#L374">CONNECT</a>
+				<a class="permalink" href="#CONNECT">&#xb6;</a>
+
+
+			</h3>
+			<pre>func CONNECT(url <a href="/pkg/builtin/#string">string</a>, f <a href="#Func">Func</a>) *<a href="#Route">Route</a></pre>
+
+
+
+
+
+			<h3 id="DELETE">func <a href="/src/github.com/ethoDomingues/braza/routes.go?s=7163:7201#L365">DELETE</a>
+				<a class="permalink" href="#DELETE">&#xb6;</a>
+
+
+			</h3>
+			<pre>func DELETE(url <a href="/pkg/builtin/#string">string</a>, f <a href="#Func">Func</a>) *<a href="#Route">Route</a></pre>
+
+
+
+
+
+			<h3 id="GET">func <a href="/src/github.com/ethoDomingues/braza/routes.go?s=6563:6598#L329">GET</a>
+				<a class="permalink" href="#GET">&#xb6;</a>
+
+
+			</h3>
+			<pre>func GET(url <a href="/pkg/builtin/#string">string</a>, f <a href="#Func">Func</a>) *<a href="#Route">Route</a></pre>
+
+
+
+
+
+			<h3 id="HEAD">func <a href="/src/github.com/ethoDomingues/braza/routes.go?s=6712:6748#L338">HEAD</a>
+				<a class="permalink" href="#HEAD">&#xb6;</a>
+
+
+			</h3>
+			<pre>func HEAD(url <a href="/pkg/builtin/#string">string</a>, f <a href="#Func">Func</a>) *<a href="#Route">Route</a></pre>
+
+
+
+
+
+			<h3 id="OPTIONS">func <a href="/src/github.com/ethoDomingues/braza/routes.go?s=7475:7514#L383">OPTIONS</a>
+				<a class="permalink" href="#OPTIONS">&#xb6;</a>
+
+
+			</h3>
+			<pre>func OPTIONS(url <a href="/pkg/builtin/#string">string</a>, f <a href="#Func">Func</a>) *<a href="#Route">Route</a></pre>
+
+
+
+
+
+			<h3 id="PATCH">func <a href="/src/github.com/ethoDomingues/braza/routes.go?s=7785:7822#L401">PATCH</a>
+				<a class="permalink" href="#PATCH">&#xb6;</a>
+
+
+			</h3>
+			<pre>func PATCH(url <a href="/pkg/builtin/#string">string</a>, f <a href="#Func">Func</a>) *<a href="#Route">Route</a></pre>
+
+
+
+
+
+			<h3 id="POST">func <a href="/src/github.com/ethoDomingues/braza/routes.go?s=6863:6899#L347">POST</a>
+				<a class="permalink" href="#POST">&#xb6;</a>
+
+
+			</h3>
+			<pre>func POST(url <a href="/pkg/builtin/#string">string</a>, f <a href="#Func">Func</a>) *<a href="#Route">Route</a></pre>
+
+
+
+
+
+			<h3 id="PUT">func <a href="/src/github.com/ethoDomingues/braza/routes.go?s=7014:7049#L356">PUT</a>
+				<a class="permalink" href="#PUT">&#xb6;</a>
+
+
+			</h3>
+			<pre>func PUT(url <a href="/pkg/builtin/#string">string</a>, f <a href="#Func">Func</a>) *<a href="#Route">Route</a></pre>
+
+
+
+
+
+			<h3 id="TRACE">func <a href="/src/github.com/ethoDomingues/braza/routes.go?s=7632:7669#L392">TRACE</a>
+				<a class="permalink" href="#TRACE">&#xb6;</a>
+
+
+			</h3>
+			<pre>func TRACE(url <a href="/pkg/builtin/#string">string</a>, f <a href="#Func">Func</a>) *<a href="#Route">Route</a></pre>
+
+
+
+
+
+
+
+			<h3 id="Route.GetRouter">func (*Route) <a
+					href="/src/github.com/ethoDomingues/braza/routes.go?s=6416:6451#L319">GetRouter</a>
+				<a class="permalink" href="#Route.GetRouter">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Route">Route</a>) GetRouter() *<a href="#Router">Router</a></pre>
+
+
+
+
+
+
+			<h3 id="Route.MountURI">func (*Route) <a
+					href="/src/github.com/ethoDomingues/braza/routes.go?s=5353:5400#L268">MountURI</a>
+				<a class="permalink" href="#Route.MountURI">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Route">Route</a>) MountURI(args ...<a href="/pkg/builtin/#string">string</a>) <a href="/pkg/builtin/#string">string</a></pre>
+
+
+
+
+
+
+
+
+			<h2 id="Router">type <a href="/src/github.com/ethoDomingues/braza/router.go?s=253:536#L10">Router</a>
+				<a class="permalink" href="#Router">&#xb6;</a>
+
+
+			</h2>
+
+			<pre>type Router struct {
+<span id="Router.Name"></span>    Name,
+    Prefix,
+    Subdomain <a href="/pkg/builtin/#string">string</a>
+<span id="Router.StrictSlash"></span>    StrictSlash <a href="/pkg/builtin/#bool">bool</a>
+
+<span id="Router.Cors"></span>    Cors        *<a href="#Cors">Cors</a>
+<span id="Router.Routes"></span>    Routes      []*<a href="#Route">Route</a>
+<span id="Router.Middlewares"></span>    Middlewares []<a href="#Func">Func</a>
+
+<span id="Router.WsUpgrader"></span>    WsUpgrader *<a href="/pkg/github.com/gorilla/websocket/">websocket</a>.<a href="/pkg/github.com/gorilla/websocket/#Upgrader">Upgrader</a>
+    <span class="comment">// contains filtered or unexported fields</span>
+}
+</pre>
+
+
+
+
+
+
+
+
+
+
+
+			<h3 id="NewRouter">func <a href="/src/github.com/ethoDomingues/braza/router.go?s=105:140#L2">NewRouter</a>
+				<a class="permalink" href="#NewRouter">&#xb6;</a>
+
+
+			</h3>
+			<pre>func NewRouter(name <a href="/pkg/builtin/#string">string</a>) *<a href="#Router">Router</a></pre>
+
+
+
+
+
+
+
+			<h3 id="Router.Add">func (*Router) <a
+					href="/src/github.com/ethoDomingues/braza/router.go?s=2625:2687#L112">Add</a>
+				<a class="permalink" href="#Router.Add">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Router">Router</a>) Add(url, name <a href="/pkg/builtin/#string">string</a>, f <a href="#Func">Func</a>, meths []<a href="/pkg/builtin/#string">string</a>)</pre>
+
+
+
+
+
+
+			<h3 id="Router.AddRoute">func (*Router) <a
+					href="/src/github.com/ethoDomingues/braza/router.go?s=2527:2570#L104">AddRoute</a>
+				<a class="permalink" href="#Router.AddRoute">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Router">Router</a>) AddRoute(routes ...*<a href="#Route">Route</a>)</pre>
+
+
+
+
+
+
+			<h3 id="Router.AllMethods">func (*Router) <a
+					href="/src/github.com/ethoDomingues/braza/router.go?s=4255:4302#L203">AllMethods</a>
+				<a class="permalink" href="#Router.AllMethods">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Router">Router</a>) AllMethods(url <a href="/pkg/builtin/#string">string</a>, f <a href="#Func">Func</a>)</pre>
+
+
+
+
+
+
+			<h3 id="Router.CONNECT">func (*Router) <a
+					href="/src/github.com/ethoDomingues/braza/router.go?s=3595:3639#L167">CONNECT</a>
+				<a class="permalink" href="#Router.CONNECT">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Router">Router</a>) CONNECT(url <a href="/pkg/builtin/#string">string</a>, f <a href="#Func">Func</a>)</pre>
+
+
+
+
+
+
+			<h3 id="Router.DELETE">func (*Router) <a
+					href="/src/github.com/ethoDomingues/braza/router.go?s=3430:3473#L158">DELETE</a>
+				<a class="permalink" href="#Router.DELETE">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Router">Router</a>) DELETE(url <a href="/pkg/builtin/#string">string</a>, f <a href="#Func">Func</a>)</pre>
+
+
+
+
+
+
+			<h3 id="Router.GET">func (*Router) <a
+					href="/src/github.com/ethoDomingues/braza/router.go?s=2790:2830#L122">GET</a>
+				<a class="permalink" href="#Router.GET">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Router">Router</a>) GET(url <a href="/pkg/builtin/#string">string</a>, f <a href="#Func">Func</a>)</pre>
+
+
+
+
+
+
+			<h3 id="Router.HEAD">func (*Router) <a
+					href="/src/github.com/ethoDomingues/braza/router.go?s=2949:2990#L131">HEAD</a>
+				<a class="permalink" href="#Router.HEAD">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Router">Router</a>) HEAD(url <a href="/pkg/builtin/#string">string</a>, f <a href="#Func">Func</a>)</pre>
+
+
+
+
+
+
+			<h3 id="Router.OPTIONS">func (*Router) <a
+					href="/src/github.com/ethoDomingues/braza/router.go?s=3762:3806#L176">OPTIONS</a>
+				<a class="permalink" href="#Router.OPTIONS">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Router">Router</a>) OPTIONS(url <a href="/pkg/builtin/#string">string</a>, f <a href="#Func">Func</a>)</pre>
+
+
+
+
+
+
+			<h3 id="Router.PATCH">func (*Router) <a
+					href="/src/github.com/ethoDomingues/braza/router.go?s=4092:4134#L194">PATCH</a>
+				<a class="permalink" href="#Router.PATCH">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Router">Router</a>) PATCH(url <a href="/pkg/builtin/#string">string</a>, f <a href="#Func">Func</a>)</pre>
+
+
+
+
+
+
+			<h3 id="Router.POST">func (*Router) <a
+					href="/src/github.com/ethoDomingues/braza/router.go?s=3110:3151#L140">POST</a>
+				<a class="permalink" href="#Router.POST">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Router">Router</a>) POST(url <a href="/pkg/builtin/#string">string</a>, f <a href="#Func">Func</a>)</pre>
+
+
+
+
+
+
+			<h3 id="Router.PUT">func (*Router) <a
+					href="/src/github.com/ethoDomingues/braza/router.go?s=3271:3311#L149">PUT</a>
+				<a class="permalink" href="#Router.PUT">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Router">Router</a>) PUT(url <a href="/pkg/builtin/#string">string</a>, f <a href="#Func">Func</a>)</pre>
+
+
+
+
+
+
+			<h3 id="Router.TRACE">func (*Router) <a
+					href="/src/github.com/ethoDomingues/braza/router.go?s=3929:3971#L185">TRACE</a>
+				<a class="permalink" href="#Router.TRACE">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (r *<a href="#Router">Router</a>) TRACE(url <a href="/pkg/builtin/#string">string</a>, f <a href="#Func">Func</a>)</pre>
+
+
+
+
+
+
+
+
+			<h2 id="Schema">type <a href="/src/github.com/ethoDomingues/braza/routes.go?s=537:552#L25">Schema</a>
+				<a class="permalink" href="#Schema">&#xb6;</a>
+
+
+			</h2>
+			<p>example:
+			<pre>type User struct{
+	Name string `braza:&quot;name=name&quot;`
+	Email string `braza:&quot;name=user,in=auth&quot;`
+	Password string `braza:&quot;name=password,in=auth&quot;`
+	ProfilePhoto *braza.File `braza:&quot;name=img,in=files&quot;`
+	KeepConnected bool `braza:&quot;name=keep,inquery&quot;`
+}
+
+func AnyHandler(ctx *braza.Ctx){
+	u, ok := ctx.Schema.(*User)
+	...
+}
+</pre>
+
+			<pre>type Schema <a href="/pkg/builtin/#any">any</a></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			<h2 id="Session">type <a href="/src/github.com/ethoDomingues/braza/session.go?s=90:274#L1">Session</a>
+				<a class="permalink" href="#Session">&#xb6;</a>
+
+
+			</h2>
+
+			<pre>type Session struct {
+<span id="Session.Permanent"></span>    Permanent <a href="/pkg/builtin/#bool">bool</a>
+    <span class="comment">// contains filtered or unexported fields</span>
+}
+</pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+			<h3 id="Session.Del">func (*Session) <a
+					href="/src/github.com/ethoDomingues/braza/session.go?s=1172:1205#L45">Del</a>
+				<a class="permalink" href="#Session.Del">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (s *<a href="#Session">Session</a>) Del(key <a href="/pkg/builtin/#string">string</a>)</pre>
+			<p>Delete a Value from Session
+
+
+
+
+
+
+			<h3 id="Session.Get">func (*Session) <a
+					href="/src/github.com/ethoDomingues/braza/session.go?s=1076:1113#L40">Get</a>
+				<a class="permalink" href="#Session.Get">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (s *<a href="#Session">Session</a>) Get(key <a href="/pkg/builtin/#string">string</a>) <a href="/pkg/builtin/#any">any</a></pre>
+			<p>Returns a session value based on the key. If key does not exist, returns an empty string
+
+
+
+
+
+
+			<h3 id="Session.GetSign">func (*Session) <a
+					href="/src/github.com/ethoDomingues/braza/session.go?s=2468:2519#L104">GetSign</a>
+				<a class="permalink" href="#Session.GetSign">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (s *<a href="#Session">Session</a>) GetSign(ctx *<a href="#Ctx">Ctx</a>) (<a href="/pkg/builtin/#string">string</a>, <a href="/pkg/builtin/#error">error</a>)</pre>
+			<p>Returns a JWT Token from session data
+
+
+
+
+
+
+			<h3 id="Session.Set">func (*Session) <a
+					href="/src/github.com/ethoDomingues/braza/session.go?s=897:937#L34">Set</a>
+				<a class="permalink" href="#Session.Set">&#xb6;</a>
+
+
+			</h3>
+			<pre>func (s *<a href="#Session">Session</a>) Set(key, value <a href="/pkg/builtin/#string">string</a>)</pre>
+			<p>This inserts a value into the session
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			<div id="footer">
+				Build version go1.22.2.<br>
+				Except as <a href="https://developers.google.com/site-policies#restrictions">noted</a>,
+				the content of this page is licensed under the
+				Creative Commons Attribution 3.0 License,
+				and code is licensed under a <a href="/LICENSE">BSD license</a>.<br>
+				<a href="https://golang.org/doc/tos.html">Terms of Service</a> |
+				<a href="https://www.google.com/intl/en/policies/privacy/">Privacy Policy</a>
+			</div>
+
+		</div><!-- .container -->
+	</div><!-- #page -->
+</body>
+
+</html>

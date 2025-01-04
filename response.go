@@ -116,13 +116,21 @@ func (r *Response) JSON(body any, code int) {
 	r.Reset()
 	r.StatusCode = code
 	r.Headers.Set("Content-Type", "application/json")
-	if b, ok := body.(string); ok {
-		r.WriteString(b)
+
+	switch body := body.(type) {
+	case string:
+		r.WriteString(body)
 		panic(ErrHttpAbort)
-	} else if b, ok := body.(error); ok {
-		r.WriteString(b.Error())
+	case error:
+		r.WriteString(body.Error())
 		panic(ErrHttpAbort)
 	}
+
+	if b, ok := body.(fmt.Stringer); ok {
+		r.WriteString(b.String())
+		panic(ErrHttpAbort)
+	}
+
 	j, err := json.Marshal(body)
 	if err != nil {
 		panic(err)
@@ -234,4 +242,28 @@ func (r *Response) ServeFile(pathToFile string) {
 		ctx.TEXT(err, 404)
 	}
 	ctx.Response.NotFound()
+}
+
+func req500(ctx *Ctx) {
+	defer l.LogRequest(ctx)
+	if err := recover(); err != nil {
+		statusText := "500 Internal Server Error"
+		l.Error(err)
+		ctx.raw.WriteHeader(500)
+		fmt.Fprint(ctx.raw, statusText)
+	}
+}
+
+func reqOK(ctx *Ctx) {
+	mi := ctx.MatchInfo
+	rsp := ctx.Response
+	if mi.Match {
+		if ctx.Session.changed {
+			rsp.SetCookie(ctx.Session.save(ctx))
+		}
+		rsp.parseHeaders()
+		rsp.Headers.Save(rsp.raw)
+	}
+	rsp.raw.WriteHeader(rsp.StatusCode)
+	fmt.Fprint(rsp.raw, rsp.String())
 }

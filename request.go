@@ -120,6 +120,11 @@ func (r *Request) parseHeaders() {
 	mi := r.ctx.MatchInfo
 	r.Query = r.URL.Query()
 	r.Args = re.getUrlValues(mi.Route.Url, r.URL.Path)
+	if mi.Router.Subdomain != "" {
+		for k, w := range re.getSubdomainValues(mi.Router.Subdomain, r.URL.Host) {
+			r.Args[k] = w
+		}
+	}
 
 	head := r.Header
 	if head.Get("Connection") == "Upgrade" && head.Get("Upgrade") == "websocket" {

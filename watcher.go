@@ -48,7 +48,7 @@ func fileWatcher(reboot chan bool) {
 
 func selfReboot() {
 	fmt.Println()
-	l.warn.Print("Changes detected, restarting the server...\n\n")
+	l.warn.Print("Changes detected, reloading server...\n\n")
 	self, _ := os.Getwd()
 	for _, app := range mapStackApps {
 		app.Srv.Close()

@@ -3,6 +3,7 @@ package braza
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 )
@@ -26,28 +27,29 @@ type _re struct {
 	all   *regexp.Regexp
 	digit *regexp.Regexp
 
-	dot2     *regexp.Regexp
-	isVar    *regexp.Regexp
-	slash2   *regexp.Regexp
-	isVarOpt *regexp.Regexp
-	httpPort *regexp.Regexp
+	dot2           *regexp.Regexp
+	isVar          *regexp.Regexp
+	slash2         *regexp.Regexp
+	isVarOpt       *regexp.Regexp
+	httpPort       *regexp.Regexp
+	dynamicSubVars *regexp.Regexp
 }
 
 var (
 	reMethods = regexp.MustCompile("^(?i)(GET|PUT|HEAD|POST|TRACE|PATCH|DELETE|CONNECT|OPTIONS)$")
-
-	re = _re{
-		str:      regexp.MustCompile(`{\w+(:str)?}`),
-		all:      regexp.MustCompile(`(\{\*\})|(\{\w+:path\})`),
-		isVar:    regexp.MustCompile(`{\w+(\:(int|str|path))?\}|\{\*\}`),
-		digit:    regexp.MustCompile(`{\w+:int}`),
-		dot2:     regexp.MustCompile(`[.]{2,}`),
-		slash2:   regexp.MustCompile(`[\/]{2,}`),
-		httpPort: regexp.MustCompile(`^([:]?[\d]{1,})$`),
+	re        = _re{
+		str:            regexp.MustCompile(`{\w+(:str)?}`),
+		all:            regexp.MustCompile(`(\{(\w+:)?\*\})|(\{\w+:path\})`),
+		dot2:           regexp.MustCompile(`[.]{2,}`),
+		digit:          regexp.MustCompile(`{\w+:int}`),
+		isVar:          regexp.MustCompile(`{\w+(\:(int|str|path|[*]))?\}|\{\*\}`),
+		slash2:         regexp.MustCompile(`[\/]{2,}`),
+		httpPort:       regexp.MustCompile(`^([:]?[\d]{1,})$`),
+		dynamicSubVars: regexp.MustCompile(`^(\{\w+(\:(int|str))?\})$`),
 	}
 )
 
-// if 'str' is a var (example: {id:int} ), return 'id', else return str
+// if 'str' is a var, example: {id:int} -> return 'id', else return str.
 func (r *_re) getVarName(str string) string {
 	if r.isVar.MatchString(str) {
 		str = strings.Replace(str, "{", "", -1)
@@ -60,28 +62,55 @@ func (r *_re) getVarName(str string) string {
 	return str
 }
 
-func (r _re) getUrlValues(url, requestUrl string) map[string]string {
-	req := strings.Split(requestUrl, "/")
+/*
+example:
+
+	url := "/user/{id:int}/"
+	requestUrl := "/user/123"
+	_re.getUrlValues -> return map[string]string{"id":"123"}
+*/
+func (r _re) getUrlValues(url, urlReq string) map[string]string {
+	if !r.isVar.MatchString(url) {
+		return map[string]string{}
+	}
+	req := strings.Split(urlReq, "/")
 	kv := map[string]string{}
-	for i, str := range strings.Split(url, "/") {
-		if i < len(req) {
-			if re.isVar.MatchString(str) {
-				varName := re.getVarName(str)
-				if varName == str {
-					continue
-				} else if re.all.MatchString(str) {
-					strs := bytes.NewBufferString("")
-					for c := i; c < len(req); c++ {
-						strs.WriteString("/" + req[c])
-					}
-					if strings.HasSuffix(requestUrl, "/") {
-						strs.WriteString("/")
-					}
-					kv[varName] = strs.String()
-					continue
-				} else {
-					kv[varName] = req[i]
+	urlSplit := strings.Split(url, "/")
+	rqSplit := strings.Split(urlReq, "/")
+	if len(urlSplit) != len(rqSplit) {
+		panic(fmt.Errorf("url unmatch with requestUrl. url: '%s' -- urlReq: '%s'", url, urlReq))
+	}
+	for i, str := range urlSplit {
+		if re.isVar.MatchString(str) {
+			varName := re.getVarName(str)
+			if re.all.MatchString(str) { // if /{filepath:*} || /{filepath:path}
+				strs := bytes.NewBufferString("")
+				for c := i; c < len(req); c++ {
+					strs.WriteString("/" + req[c])
 				}
+				if strings.HasSuffix(urlReq, "/") {
+					strs.WriteString("/")
+				}
+				kv[varName] = strs.String()
+				continue
+			} else { // else /{var:int||str}
+				kv[varName] = req[i]
+			}
+		}
+	}
+	return kv
+}
+
+func (r _re) getSubdomainValues(subdomain, requestHost string) map[string]string {
+	kv := map[string]string{}
+	sub := strings.Split(requestHost, ".")
+	for i, str := range strings.Split(subdomain, ".") {
+		if re.isVar.MatchString(str) {
+			varName := re.getVarName(str)
+			if varName == str {
+				continue
+			} else {
+				kv[varName] = sub[i]
 			}
 		}
 	}

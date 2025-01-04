@@ -27,9 +27,9 @@ type Router struct {
 	Routes      []*Route
 	Middlewares []Func
 
-	is_main        bool
+	main           bool
 	routesByName   map[string]*Route
-	subdomainRegex *regexp.Regexp
+	subdomainRegex []*regexp.Regexp
 
 	errHandlers map[int]Func
 
@@ -41,23 +41,42 @@ func (r *Router) parse(servername string) {
 		r.routesByName = map[string]*Route{}
 	}
 
-	if r.Name == "" && !r.is_main {
+	if r.Name == "" && !r.main {
 		panic(fmt.Errorf("the routers must be named"))
 	}
 	if r.Subdomain != "" {
 		if servername == "" {
 			panic(fmt.Errorf("to use subdomains you need to first add a ServerName in the app. Router:'%s'", r.Name))
 		}
-		sub := "(" + r.Subdomain + ")" + `(.` + servername + `)`
-		r.subdomainRegex = regexp.MustCompile("^" + sub + "$")
-	} else if servername != "" {
-		r.subdomainRegex = regexp.MustCompile("^(" + servername + ")$")
+		r.compileSub()
 	}
-
+	if servername != "" {
+		r.subdomainRegex = append(r.subdomainRegex, regexp.MustCompile(servername))
+	}
 	for _, route := range r.Routes {
 		if !route.parsed {
 			r.parseRoute(route)
 		}
+		r.routesByName[route.Name] = route
+	}
+}
+
+func (r *Router) compileSub() {
+	sub := r.Subdomain
+	subSplit := strings.Split(sub, ".")
+
+	for _, str := range subSplit {
+		if str == "" {
+			continue
+		}
+		if re.isVar.MatchString(str) {
+			str = re.str.ReplaceAllString(str, `([a-zA-Z0-9\-\_]+)`)
+			str = re.digit.ReplaceAllString(str, `(\d+)`)
+			if re.isVar.MatchString(str) {
+				panic(fmt.Errorf("only 'str' and 'int' are allowed in dynamic subdomains - Router:'%s', Subdomain:'%s'", r.Name, r.Subdomain))
+			}
+		}
+		r.subdomainRegex = append(r.subdomainRegex, regexp.MustCompile(str))
 	}
 }
 
@@ -83,7 +102,6 @@ func (r *Router) parseRoute(route *Route) {
 	} else if route.Url != "" && (!strings.HasPrefix(route.Url, "/") && !strings.HasSuffix(r.Prefix, "/")) {
 		panic(fmt.Errorf("Route '%v' Prefix must start with slash or be a null String", r.Name))
 	}
-	// if route.Url == "" {}
 
 	route.simpleUrl = route.Url
 	route.Url = filepath.Join(r.Prefix, route.Url)
@@ -95,12 +113,18 @@ func (r *Router) parseRoute(route *Route) {
 
 func (r *Router) match(ctx *Ctx) bool {
 	rq := ctx.Request
-
-	if r.subdomainRegex != nil {
-		if !r.subdomainRegex.MatchString(rq.Host) {
+	if len(r.subdomainRegex) > 0 {
+		subSplit := strings.Split(rq.Host, ".")
+		if len(subSplit) != len(r.subdomainRegex) {
 			return false
 		}
+		for i, s := range r.subdomainRegex {
+			if !s.MatchString(subSplit[i]) { // regex do not work => create a new e replace in url too
+				return false
+			}
+		}
 	}
+
 	for _, route := range r.Routes {
 		if route.match(ctx) {
 			ctx.MatchInfo.Router = r

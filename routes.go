@@ -12,6 +12,10 @@ import (
 
 type Func func(ctx *Ctx)
 
+func (f Func) String() string {
+	return "func(ctx *Ctx)"
+}
+
 /*
 example:
 
@@ -33,7 +37,7 @@ type Schema any
 type Meth struct {
 	Func
 	Schema
-	schemaFielder *c3po.Fielder
+	SchemaFielder *c3po.Fielder
 }
 
 type MapCtrl map[string]*Meth
@@ -78,14 +82,14 @@ func (r *Route) compileUrl() {
 				isPrefix = true
 			}
 			if re.dot2.MatchString(str) {
-				str = re.dot2.ReplaceAllString(str, "/")
+				str = re.dot2.ReplaceAllString(str, "/") // -> /../../home = /////home
 			}
 			if re.slash2.MatchString(str) {
-				str = re.slash2.ReplaceAllString(str, "/")
+				str = re.slash2.ReplaceAllString(str, "/") // -> /////home = /home
 			}
 
 			if re.isVar.MatchString(str) {
-				str = re.str.ReplaceAllString(str, `(([\x00-\x7F]+)([^\\\/\s]+)|\d+)`)
+				str = re.str.ReplaceAllString(str, `(([\x00-\x7F]+)([^\\\/\s]+)|\d+)`) // This expression will search for non-ASCII values:
 				str = re.digit.ReplaceAllString(str, `(\d+)`)
 			}
 			if !isPrefix {
@@ -116,8 +120,7 @@ func (r *Route) compileMethods() {
 		}
 		if m.Schema != nil {
 			sch := c3po.ParseSchemaWithTag("braza", m.Schema)
-			m.schemaFielder = sch
-			m.Schema = nil
+			m.SchemaFielder = sch
 		}
 		ctrl[v] = m
 	}
@@ -137,7 +140,8 @@ func (r *Route) compileMethods() {
 
 			if r.Schema != nil {
 				sch := c3po.ParseSchemaWithTag("braza", r.Schema)
-				r.MapCtrl[v].schemaFielder = sch
+				r.MapCtrl[v].SchemaFielder = sch
+				r.MapCtrl[v].Schema = r.Schema
 			}
 		}
 	}
@@ -262,7 +266,7 @@ func (r *Route) match(ctx *Ctx) bool {
 		}
 		mi.Match = true
 		mi.Route = r
-		ctx.SchemaFielder = meth.schemaFielder
+		ctx.SchemaFielder = meth.SchemaFielder
 		return true
 	}
 

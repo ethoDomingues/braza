@@ -233,3 +233,23 @@ func showRoutes(app *App) {
 		fmt.Printf("+-%s+-%s+-%s+\n", line1, line2, line3)
 	}
 }
+
+func showRouteSchema(app *App, routeName string) {
+	var rname, meth = routeName, ""
+
+	parts := strings.Split(routeName, ":")
+	if len(parts) > 2 {
+		panic("invalid route name")
+	} else if len(parts) == 2 {
+		rname = parts[0]
+		meth = strings.ToUpper(parts[1])
+	} else {
+		panic("routeSchema flag need a method. example: api.setProducts:POST")
+	}
+	if r, ok := app.routesByName[rname]; ok {
+		if m, ok := r.MapCtrl[meth]; ok {
+			fmt.Println(m.SchemaFielder)
+		}
+	}
+
+}
