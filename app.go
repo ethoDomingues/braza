@@ -577,7 +577,7 @@ func (app *App) UrlFor(name string, external bool, args ...string) string {
 	// Build Host
 	if external {
 		schema := "http://"
-		if app.ListeningInTLS || len(app.Srv.TLSConfig.Certificates) > 0 {
+		if app.ListeningInTLS {
 			schema = "https://"
 		}
 		srvname := app.Servername
