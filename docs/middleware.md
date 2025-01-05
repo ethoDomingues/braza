@@ -6,20 +6,20 @@ package main
 import (
  "fmt"
 
- "github.com/ethoDomingues/ctrl"
+ "github.com/ethoDomingues/braza"
 )
 
 func main() {
- app := ctrl.NewApp(nil)
- app.Middlewares = ctrl.Middlewares{middle1, middle2}
+ app := braza.NewApp(nil)
+ app.Middlewares = braza.Middlewares{middle1, middle2}
 
- app.AddRoute(&ctrl.Route{
+ app.AddRoute(&braza.Route{
   Url:         "/",
   Func:        home,
-  Middlewares: ctrl.Middlewares{middle3, middle4},
+  Middlewares: braza.Middlewares{middle3, middle4},
  })
 
- app.AddRoute(&ctrl.Route{
+ app.AddRoute(&braza.Route{
   Url:  "/echo",
   Name: "echo",
   Func: echo,
@@ -27,26 +27,26 @@ func main() {
  app.Listen()
 }
 
-func home(ctx *ctrl.Ctx) {
+func home(ctx *braza.Ctx) {
  ctx.response.HTML("<h1>Hello</h1>",200)
 }
 
 
-func middle1(ctx *ctrl.Ctx) {
+func middle1(ctx *braza.Ctx) {
  fmt.Println("middle 1")
  ctx.Next()
 }
 
-func middle2(ctx *ctrl.Ctx) {
+func middle2(ctx *braza.Ctx) {
  fmt.Println("middle 2")
  ctx.Next()
 }
 
-func middle3(ctx *ctrl.Ctx) {
+func middle3(ctx *braza.Ctx) {
  fmt.Println("middle 3")
  ctx.Next()
 }
-func middle4(ctx *ctrl.Ctx) {
+func middle4(ctx *braza.Ctx) {
  fmt.Println("middle 4")
  ctx.Next()
 }

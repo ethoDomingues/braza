@@ -13,7 +13,7 @@ import (
 type Func func(ctx *Ctx)
 
 func (f Func) String() string {
-	return "func(ctx *Ctx)"
+	return "func(ctx *braza.Ctx)"
 }
 
 /*
@@ -21,8 +21,8 @@ example:
 
 	type User struct{
 		Name string `braza:"name=name"`
-		Email string `braza:"name=user,in=auth"`
-		Password string `braza:"name=password,in=auth"`
+		Email string `braza:"name=username,in=auth"`    // name need be 'username'
+		Password string `braza:"name=password,in=auth"` // name need be 'password'
 		ProfilePhoto *braza.File `braza:"name=img,in=files"`
 		KeepConnected bool `braza:"name=keep,inquery"`
 	}
@@ -47,20 +47,20 @@ type Route struct {
 	Name string
 
 	Func        Func
-	Methods     []string
 	Cors        *Cors
 	Schema      Schema
 	MapCtrl     MapCtrl
+	Methods     []string
 	Middlewares []Func
 
+	parsed      bool
 	router      *Router
-	simpleName  string
-	simpleUrl   string
 	urlRegex    []*regexp.Regexp
+	hasSufix    bool
+	isStatic    bool
+	simpleUrl   string
+	simpleName  string
 	isUrlPrefix bool
-	parsed,
-	isStatic bool
-	hasSufix bool
 }
 
 func (r *Route) compileUrl() {
@@ -275,7 +275,7 @@ func (r *Route) match(ctx *Ctx) bool {
 	return false
 }
 
-func (r *Route) MountURI(args ...string) string {
+func (r *Route) mountURI(args ...string) string {
 	var (
 		params = map[string]string{}
 	)
@@ -334,6 +334,7 @@ func (r *Route) GetRouter() *Router {
 }
 
 /*
+
  */
 
 func GET(url string, f Func) *Route {

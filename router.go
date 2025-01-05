@@ -18,22 +18,19 @@ func NewRouter(name string) *Router {
 }
 
 type Router struct {
-	Name,
-	Prefix,
-	Subdomain string
-	StrictSlash bool
-
 	Cors        *Cors
+	Name        string
 	Routes      []*Route
+	Prefix      string
+	Subdomain   string
+	WsUpgrader  *websocket.Upgrader
 	Middlewares []Func
+	StrictSlash bool
 
 	main           bool
 	routesByName   map[string]*Route
 	subdomainRegex []*regexp.Regexp
-
-	errHandlers map[int]Func
-
-	WsUpgrader *websocket.Upgrader
+	errHandlers    map[int]Func
 }
 
 func (r *Router) parse(servername string) {

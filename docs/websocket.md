@@ -6,14 +6,14 @@ package main
 import (
  "log"
 
- "github.com/ethoDomingues/ctrl"
+ "github.com/ethoDomingues/braza"
 )
 
 
 func main() {
- app := ctrl.NewApp(nil)
- app.AddRoute(ctrl.Get("/", home))
- app.AddRoute(&ctrl.Route{
+ app := braza.NewApp(nil)
+ app.AddRoute(braza.Get("/", home))
+ app.AddRoute(&braza.Route{
   Url:  "/echo",
   Name: "echo",
   Func: echo,
@@ -21,7 +21,7 @@ func main() {
  app.Listen()
 }
 
-func echo(ctx *ctrl.Ctx) {
+func echo(ctx *braza.Ctx) {
  c, err := ctx.Request.Websocket(nil)
  if err != nil {
   log.Print("upgrade:", err)
@@ -43,7 +43,7 @@ func echo(ctx *ctrl.Ctx) {
  }
 }
 
-func home(ctx *ctrl.Ctx) {
+func home(ctx *braza.Ctx) {
  ctx.Response.RenderTemplate("home.html")
 }
 ```

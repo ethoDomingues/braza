@@ -596,6 +596,6 @@ func (app *App) UrlFor(name string, external bool, args ...string) string {
 			}
 		}
 	}
-	url := route.MountURI(args...)
+	url := route.mountURI(args...)
 	return host + url
 }
