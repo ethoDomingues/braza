@@ -430,10 +430,6 @@ func (app *App) match(ctx *Ctx) {
 
 	for _, router := range app.routers {
 		if router.match(ctx) {
-			fmt.Println(rq.Host)
-			fmt.Println(app.Servername)
-			fmt.Println(router.subdomainRegex)
-			fmt.Println()
 			if router.StrictSlash && !strings.HasSuffix(rq.URL.Path, "/") {
 				args := []string{}
 				for k, v := range rq.Args {
