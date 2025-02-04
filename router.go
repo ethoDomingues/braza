@@ -33,35 +33,9 @@ type Router struct {
 	errHandlers    map[int]Func
 }
 
-func (r *Router) parse(servername string) {
-	if r.routesByName == nil {
-		r.routesByName = map[string]*Route{}
-	}
-
-	if r.Name == "" && !r.main {
-		panic(fmt.Errorf("the routers must be named"))
-	}
-	if r.Subdomain != "" {
-		if servername == "" {
-			panic(fmt.Errorf("to use subdomains you need to first add a ServerName in the app. Router:'%s'", r.Name))
-		}
-		r.compileSub()
-	}
-	if servername != "" {
-		r.subdomainRegex = append(r.subdomainRegex, regexp.MustCompile(servername))
-	}
-	for _, route := range r.Routes {
-		if !route.parsed {
-			r.parseRoute(route)
-		}
-		r.routesByName[route.Name] = route
-	}
-}
-
 func (r *Router) compileSub() {
 	sub := r.Subdomain
 	subSplit := strings.Split(sub, ".")
-
 	for _, str := range subSplit {
 		if str == "" {
 			continue
@@ -108,6 +82,38 @@ func (r *Router) parseRoute(route *Route) {
 	route.parsed = true
 }
 
+func (r *Router) parse(servername string) {
+	if r.routesByName == nil {
+		r.routesByName = map[string]*Route{}
+	}
+
+	if r.Name == "" && !r.main {
+		panic(fmt.Errorf("the routers must be named"))
+	}
+	if r.Subdomain != "" {
+		if servername == "" {
+			panic(fmt.Errorf("to use subdomains you need to first add a ServerName in the app. Router:'%s'", r.Name))
+		}
+		r.compileSub()
+	}
+	if servername != "" {
+		srvSplit := strings.Split(servername, ".")
+		for _, s := range srvSplit {
+			r.subdomainRegex = append(r.subdomainRegex, regexp.MustCompile(s)) // if nao tiver subdomain, ainda precisa usar o servername
+		}
+	}
+
+	for _, route := range r.Routes {
+		if !route.parsed {
+			r.parseRoute(route)
+		}
+		r.routesByName[route.Name] = route
+	}
+}
+
+/*
+ */
+
 func (r *Router) match(ctx *Ctx) bool {
 	rq := ctx.Request
 	if len(r.subdomainRegex) > 0 {
@@ -131,13 +137,11 @@ func (r *Router) match(ctx *Ctx) bool {
 	return false
 }
 
+/*
+ */
 func (r *Router) AddRoute(routes ...*Route) {
 	r.Routes = append(r.Routes, routes...)
 }
-
-/*
-
- */
 
 func (r *Router) Add(url, name string, f Func, meths []string) {
 	r.AddRoute(
@@ -149,94 +153,20 @@ func (r *Router) Add(url, name string, f Func, meths []string) {
 		})
 }
 
-func (r *Router) GET(url string, f Func) {
-	r.AddRoute(&Route{
-		Url:     url,
-		Func:    f,
-		Name:    getFunctionName(f),
-		Methods: []string{"GET"},
-	})
-}
+func (r *Router) GET(url string, f Func) { r.AddRoute(GET(url, f)) }
 
-func (r *Router) HEAD(url string, f Func) {
-	r.AddRoute(&Route{
-		Url:     url,
-		Func:    f,
-		Name:    getFunctionName(f),
-		Methods: []string{"HEAD"},
-	})
-}
+func (r *Router) PUT(url string, f Func) { r.AddRoute(PUT(url, f)) }
 
-func (r *Router) POST(url string, f Func) {
-	r.AddRoute(&Route{
-		Url:     url,
-		Func:    f,
-		Name:    getFunctionName(f),
-		Methods: []string{"POST"},
-	})
-}
+func (r *Router) HEAD(url string, f Func) { r.AddRoute(HEAD(url, f)) }
 
-func (r *Router) PUT(url string, f Func) {
-	r.AddRoute(&Route{
-		Url:     url,
-		Func:    f,
-		Name:    getFunctionName(f),
-		Methods: []string{"PUT"},
-	})
-}
+func (r *Router) POST(url string, f Func) { r.AddRoute(POST(url, f)) }
 
-func (r *Router) DELETE(url string, f Func) {
-	r.AddRoute(&Route{
-		Url:     url,
-		Func:    f,
-		Name:    getFunctionName(f),
-		Methods: []string{"DELETE"},
-	})
-}
+func (r *Router) TRACE(url string, f Func) { r.AddRoute(TRACE(url, f)) }
 
-func (r *Router) CONNECT(url string, f Func) {
-	r.AddRoute(&Route{
-		Url:     url,
-		Func:    f,
-		Name:    getFunctionName(f),
-		Methods: []string{"CONNECT"},
-	})
-}
+func (r *Router) PATCH(url string, f Func) { r.AddRoute(PATCH(url, f)) }
 
-func (r *Router) OPTIONS(url string, f Func) {
-	r.AddRoute(&Route{
-		Url:     url,
-		Func:    f,
-		Name:    getFunctionName(f),
-		Methods: []string{"OPTIONS"},
-	})
-}
+func (r *Router) DELETE(url string, f Func) { r.AddRoute(DELETE(url, f)) }
 
-func (r *Router) TRACE(url string, f Func) {
-	r.AddRoute(&Route{
-		Url:     url,
-		Func:    f,
-		Name:    getFunctionName(f),
-		Methods: []string{"TRACE"},
-	})
-}
+func (r *Router) CONNECT(url string, f Func) { r.AddRoute(CONNECT(url, f)) }
 
-func (r *Router) PATCH(url string, f Func) {
-	r.AddRoute(&Route{
-		Url:     url,
-		Func:    f,
-		Name:    getFunctionName(f),
-		Methods: []string{"PATCH"},
-	})
-}
-
-func (r *Router) AllMethods(url string, f Func) {
-	r.AddRoute(&Route{
-		Url:  url,
-		Func: f,
-		Name: getFunctionName(f),
-		Methods: []string{
-			"GET", "POST", "PUT", "DELETE",
-			"CONNECT", "OPTIONS", "TRACE", "PATCH"},
-	})
-}
+func (r *Router) OPTIONS(url string, f Func) { r.AddRoute(OPTIONS(url, f)) }

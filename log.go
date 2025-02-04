@@ -138,8 +138,7 @@ func (l *logger) LogRequest(ctx *Ctx) {
 	}
 }
 
-// Show All Routes ( internal )
-func showRoutes(app *App) {
+func (app *App) ShowRoutes() {
 	if !app.built {
 		app.Build()
 	}

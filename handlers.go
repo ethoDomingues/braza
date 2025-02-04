@@ -1,6 +1,7 @@
 package braza
 
 import (
+	"fmt"
 	"mime"
 	"net/http"
 	"os"
@@ -44,4 +45,34 @@ func optionsHandler(ctx *Ctx) {
 	}
 	rsp.parseHeaders()
 	rsp.Headers.Save(rsp.raw)
+}
+
+func execTeardown(ctx *Ctx) {
+	if ctx.App.TearDownRequest != nil {
+		go ctx.App.TearDownRequest(ctx)
+	}
+}
+
+func req500(ctx *Ctx) {
+	defer l.LogRequest(ctx)
+	if err := recover(); err != nil {
+		statusText := "500 Internal Server Error"
+		l.Error(err)
+		ctx.raw.WriteHeader(500)
+		fmt.Fprint(ctx.raw, statusText)
+	}
+}
+
+func reqOK(ctx *Ctx) {
+	mi := ctx.MatchInfo
+	rsp := ctx.Response
+	if mi.Match {
+		if ctx.Session.changed {
+			rsp.SetCookie(ctx.Session.save(ctx))
+		}
+		rsp.parseHeaders()
+		rsp.Headers.Save(rsp.raw)
+	}
+	rsp.raw.WriteHeader(rsp.StatusCode)
+	fmt.Fprint(rsp.raw, rsp.String())
 }

@@ -28,7 +28,8 @@ Usage:
 	app := braza.NewApp(cfg)
 	...
 */
-func NewConfig() *Config { return &Config{} }
+func NewConfig() *Config                    { return &Config{} }
+func NewConfigFromFile(file string) *Config { c := &Config{}; c.SetupFromFile(file); return c }
 
 type Config struct {
 	Env            string // environmnt (default 'development')

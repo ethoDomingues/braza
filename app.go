@@ -41,7 +41,6 @@ var (
 	env          string
 	port         string
 	address      string
-	listRoute    bool
 	listRouteSch string
 )
 
@@ -49,7 +48,6 @@ func init() {
 	flag.StringVar(&env, "env", "", "set a address listener")
 	flag.StringVar(&port, "port", "", "set a address listener")
 	flag.StringVar(&address, "address", "", "set a address listener")
-	flag.BoolVar(&listRoute, "routes", false, "if true, show routes before start listener")
 	flag.StringVar(&listRouteSch, "routeSch", "", "show routes schema-> app.route || app.route:GET")
 }
 
@@ -95,6 +93,56 @@ type App struct {
 	built bool
 }
 
+/*
+ENV funcs
+*/
+
+func (app *App) setFlags() {
+	flag.Parse()
+	if e, ok := allowEnv[env]; env != "" && ok {
+		app.Env = e
+	}
+	if app.Srv == nil {
+		app.Srv = &http.Server{}
+	}
+	if address != "" {
+		app.Srv.Addr = address
+	}
+	if port != "" {
+		if !re.httpPort.MatchString(port) {
+			l.err.Panicf("port '%s' is not valid!", port)
+		}
+		port = strings.TrimPrefix(port, ":")
+		if app.Srv.Addr != "" {
+			h, p, err := net.SplitHostPort(app.Srv.Addr)
+			if h == "" && p == "" && err != nil {
+				l.err.Panic(err)
+			}
+			app.Srv.Addr = net.JoinHostPort(h, port)
+		} else {
+			app.Srv.Addr = ":" + port
+		}
+	}
+	if listRouteSch != "" {
+		showRouteSchema(app, listRouteSch)
+	}
+}
+
+func (app *App) setEnv() {
+	if e := os.Getenv("ENV"); e != "" {
+		app.Env = e
+	}
+	if s := os.Getenv("SERVERNAME"); s != "" {
+		app.Servername = s
+	}
+	if addr := os.Getenv("ADDRESS"); addr != "" {
+		if app.Srv == nil {
+			app.Srv = &http.Server{}
+		}
+		app.Srv.Addr = addr
+	}
+}
+
 func (app *App) logStarterListener() {
 	addr, port, err := net.SplitHostPort(app.Srv.Addr)
 	if err != nil {
@@ -128,12 +176,26 @@ func (app *App) logStarterListener() {
 	}
 }
 
+/*
+SERVER funcs
+*/
 func (app *App) startListener(c chan error) {
 	c <- app.Srv.ListenAndServe()
 }
 
 func (app *App) startListenerTLS(privKey, pubKey string, c chan error) {
 	c <- app.Srv.ListenAndServeTLS(privKey, pubKey)
+}
+
+func (app *App) parseSrvApp(addr string) {
+	app.Srv.Handler = app
+	app.Srv.MaxHeaderBytes = 1 << 20
+	if app.Srv.Addr == "" && addr != "" {
+		app.Srv.Addr = addr
+	} else if app.Srv.Addr == "" {
+		app.Srv.Addr = "localhost:5000"
+	}
+
 }
 
 func runSrv(app *App, privKey, pubKey string, host ...string) (err error) {
@@ -175,6 +237,18 @@ func runSrv(app *App, privKey, pubKey string, host ...string) (err error) {
 	}
 }
 
+func (app *App) Listen(host ...string) (err error) {
+	return runSrv(app, "", "", host...)
+}
+
+func (app *App) ListenTLS(certFile, certKey string, host ...string) (err error) {
+	return runSrv(app, certFile, certKey, host...)
+}
+
+/*
+APP methods
+*/
+
 /*
 Build the App, but not start serve
 
@@ -197,10 +271,10 @@ example:
 	}
 */
 func (app *App) Build(addr ...string) {
-	app.parseApp()
-	if app.uuid == "" {
-		app.uuid = uuid.New().String()
+	if app.built {
+		return
 	}
+	app.parseApp()
 	l = newLogger(app.LogFile)
 
 	var address string
@@ -219,76 +293,27 @@ func (app *App) Build(addr ...string) {
 	}
 	app.setFlags()
 	app.parseSrvApp(address)
-
-}
-
-func (app *App) parseSrvApp(addr string) {
-	app.Srv.Handler = app
-	app.Srv.MaxHeaderBytes = 1 << 20
-	if app.Srv.Addr == "" && addr != "" {
-		app.Srv.Addr = addr
-	} else if app.Srv.Addr == "" {
-		app.Srv.Addr = "localhost:5000"
-	}
-
-}
-
-func (app *App) setFlags() {
-	flag.Parse()
-	if e, ok := allowEnv[env]; env != "" && ok {
-		app.Env = e
-	}
-	if app.Srv == nil {
-		app.Srv = &http.Server{}
-	}
-	if address != "" {
-		app.Srv.Addr = address
-	}
-	if port != "" {
-		if !re.httpPort.MatchString(port) {
-			l.err.Panicf("port '%s' is not valid!", port)
-		}
-		port = strings.TrimPrefix(port, ":")
-		if app.Srv.Addr != "" {
-			h, p, err := net.SplitHostPort(app.Srv.Addr)
-			if h == "" && p == "" && err != nil {
-				l.err.Panic(err)
-			}
-			app.Srv.Addr = net.JoinHostPort(h, port)
-		} else {
-			app.Srv.Addr = ":" + port
-		}
-	}
-	if listRoute {
-		showRoutes(app)
-	}
-	if listRouteSch != "" {
-		showRouteSchema(app, listRouteSch)
-	}
-}
-
-func (app *App) setEnv() {
-	if e := os.Getenv("ENV"); e != "" {
-		app.Env = e
-	}
-	if s := os.Getenv("SERVERNAME"); s != "" {
-		app.Servername = s
-	}
-	if addr := os.Getenv("ADDRESS"); addr != "" {
-		if app.Srv == nil {
-			app.Srv = &http.Server{}
-		}
-		app.Srv.Addr = addr
-	}
 }
 
 // Parse the router and your routes
 func (app *App) parseApp() {
+	app.uuid = uuid.NewString()
 	app.setEnv()
 	app.checkConfig()
 	if app.Servername != "" {
-		srv := strings.TrimPrefix(app.Servername, ".")
-		srv = strings.TrimSuffix(srv, "/")
+
+		srv := strings.TrimPrefix(
+			strings.TrimPrefix(
+				app.Servername, "https//",
+			),
+			"https://",
+		) // so pra evitar erros
+
+		srv = strings.TrimPrefix(
+			strings.TrimSuffix(
+				srv, "/",
+			), ".") // so pra evitar erros²
+
 		h, p, err := net.SplitHostPort(srv)
 		if err != nil && p != "" && h != "" {
 			log.Fatal(err)
@@ -374,7 +399,9 @@ func (app *App) Mount(routers ...*Router) {
 		} else if _, ok := app.routerByName[router.Name]; ok {
 			panic(fmt.Errorf("router '%s' already regitered", router.Name))
 		}
-		app.routers = append(app.routers, router)
+		if !slices.Contains(app.routers, app.Router) {
+			app.routers = append(app.routers, router)
+		}
 	}
 }
 
@@ -385,68 +412,17 @@ func (app *App) ErrorHandler(statusCode int, f Func) {
 	app.errHandlers[statusCode] = f
 }
 
-func (app *App) Listen(host ...string) (err error) {
-	return runSrv(app, "", "", host...)
-}
-
-func (app *App) ListenTLS(certFile, certKey string, host ...string) (err error) {
-	return runSrv(app, certFile, certKey, host...)
-}
-
-func Daemon(apps ...*App) error {
-	cErrs := make(chan map[string]error)
-	countErrors := map[string]int{}
-	if mapStackApps == nil {
-		mapStackApps = map[string]*App{}
-	}
-
-	for c, app := range apps {
-		if app.Name == "" {
-			l.warn.Println("When using 'Daemon', a good practice is to name all 'apps'")
-		}
-		app.Build()
-		countErrors[app.uuid] = 0
-		mapStackApps[app.uuid] = app
-		if c > 0 {
-			app.DisableFileWatcher = true
-		}
-		go runAppDaemon(app, cErrs)
-	}
-	apps = nil
-	for {
-		<-cErrs
-		for _, a := range mapStackApps {
-			a.Srv.Close()
-		}
-		// for appUUID, err := range mErr {
-		// }
-	}
-
-}
-
-func runAppDaemon(app *App, err chan map[string]error) {
-	err <- map[string]error{app.uuid: app.Listen()}
-}
-
 /*
-
-
-
- */
-
-func execTeardown(ctx *Ctx) {
-	if ctx.App.TearDownRequest != nil {
-		go ctx.App.TearDownRequest(ctx)
-	}
-}
+HTTP funcs
+*/
 
 func (app *App) match(ctx *Ctx) {
 	rq := ctx.Request
-
 	if app.Servername != "" {
 		if net.ParseIP(rq.Host) != nil {
 			ctx.NotFound()
 		}
+
 		if !strings.Contains(rq.Host, app.Servername) {
 			ctx.NotFound()
 		}
@@ -454,6 +430,10 @@ func (app *App) match(ctx *Ctx) {
 
 	for _, router := range app.routers {
 		if router.match(ctx) {
+			fmt.Println(rq.Host)
+			fmt.Println(app.Servername)
+			fmt.Println(router.subdomainRegex)
+			fmt.Println()
 			if router.StrictSlash && !strings.HasSuffix(rq.URL.Path, "/") {
 				args := []string{}
 				for k, v := range rq.Args {
@@ -474,6 +454,7 @@ func (app *App) match(ctx *Ctx) {
 // exec route and handle errors of application
 func (app *App) execRoute(ctx *Ctx) {
 	app.match(ctx)
+
 	rq := ctx.Request
 	mi := ctx.MatchInfo
 

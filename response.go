@@ -48,11 +48,16 @@ func (r *Response) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	return r.raw.(http.Hijacker).Hijack()
 }
 
-func (r *Response) _write(v any) {
-	if reader, ok := v.(io.Reader); ok {
-		io.Copy(r, reader)
-	} else {
+func (r *Response) writeAny(body any) {
+	switch v := body.(type) {
+	default:
 		r.WriteString(fmt.Sprint(v))
+	case string:
+		r.WriteString(v)
+	case []byte:
+		r.Write(v)
+	case io.Reader:
+		io.Copy(r, v)
 	}
 }
 
@@ -105,7 +110,7 @@ func (r *Response) textCode(code int) {
 func (r *Response) Redirect(url string) {
 	r.Reset()
 	r.Headers.Set("Location", url)
-	r.StatusCode = 307
+	r.StatusCode = 302
 
 	r.Headers.Set("Content-Type", "text/html; charset=utf-8")
 	r.WriteString("<a href=\"" + c3po.HtmlEscape(url) + "\"> Manual Redirect </a>.\n")
@@ -124,10 +129,15 @@ func (r *Response) JSON(body any, code int) {
 	case error:
 		r.WriteString(body.Error())
 		panic(ErrHttpAbort)
-	}
-
-	if b, ok := body.(fmt.Stringer); ok {
-		r.WriteString(b.String())
+	case fmt.Stringer:
+		r.WriteString(body.String())
+		panic(ErrHttpAbort)
+	case Jsonify:
+		j, err := json.Marshal(body.ToJson())
+		if err != nil {
+			panic(err)
+		}
+		r.Write(j)
 		panic(ErrHttpAbort)
 	}
 
@@ -143,7 +153,7 @@ func (r *Response) TEXT(body any, code int) {
 	r.Reset()
 	r.StatusCode = code
 	r.Headers.Set("Content-Type", "text/plain")
-	r._write(body)
+	r.writeAny(body)
 	panic(ErrHttpAbort)
 }
 
@@ -151,7 +161,7 @@ func (r *Response) HTML(body any, code int) {
 	r.Reset()
 	r.StatusCode = code
 	r.Headers.Set("Content-Type", "text/html")
-	r._write(body)
+	r.writeAny(body)
 	panic(ErrHttpAbort)
 }
 
@@ -242,28 +252,4 @@ func (r *Response) ServeFile(pathToFile string) {
 		ctx.TEXT(err, 404)
 	}
 	ctx.Response.NotFound()
-}
-
-func req500(ctx *Ctx) {
-	defer l.LogRequest(ctx)
-	if err := recover(); err != nil {
-		statusText := "500 Internal Server Error"
-		l.Error(err)
-		ctx.raw.WriteHeader(500)
-		fmt.Fprint(ctx.raw, statusText)
-	}
-}
-
-func reqOK(ctx *Ctx) {
-	mi := ctx.MatchInfo
-	rsp := ctx.Response
-	if mi.Match {
-		if ctx.Session.changed {
-			rsp.SetCookie(ctx.Session.save(ctx))
-		}
-		rsp.parseHeaders()
-		rsp.Headers.Save(rsp.raw)
-	}
-	rsp.raw.WriteHeader(rsp.StatusCode)
-	fmt.Fprint(rsp.raw, rsp.String())
 }

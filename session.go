@@ -42,20 +42,34 @@ func (s *Session) validate(c *http.Cookie, ctx *Ctx) {
 
 // This inserts a value into the session
 func (s *Session) Set(key, value string) {
+	if key == "_permanent" {
+		panic("'_permanent' is a internal key")
+	}
 	s.claims[key] = value
 	s.changed = true
 }
 
 // Returns a session value based on the key. If key does not exist, returns an empty string
-func (s *Session) Get(key string) any {
-	return s.claims[key]
+func (s *Session) Get(key string) string {
+	if v, ok := s.claims[key]; ok {
+		return v.(string)
+	}
+	return ""
+
 }
 
 // Delete a Value from Session
-func (s *Session) Del(key string) {
-	s.del = append(s.del, key)
-	delete(s.claims, key)
-	s.changed = true
+func (s *Session) Del(key string) string {
+	if key == "_permanent" {
+		panic("'_permanent' is a internal key")
+	}
+	if v, ok := s.claims[key]; ok {
+		s.del = append(s.del, key)
+		delete(s.claims, key)
+		s.changed = true
+		return v.(string)
+	}
+	return ""
 }
 
 // Returns a cookie, with the value being a jwt
