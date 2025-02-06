@@ -53,6 +53,9 @@ func selfReboot() {
 	for _, app := range mapStackApps {
 		app.Srv.Close()
 	}
+
+	time.Sleep(time.Duration(time.Second))
+
 	nArgs := append([]string{"run", self}, os.Args[1:]...)
 
 	errBuf := bytes.NewBufferString("")

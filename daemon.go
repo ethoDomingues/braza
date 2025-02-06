@@ -1,6 +1,8 @@
 package braza
 
-import "errors"
+import (
+	"errors"
+)
 
 func runAppDaemon(app *App, err chan map[string]error) {
 	err <- map[string]error{app.uuid: app.Listen()}
@@ -8,7 +10,7 @@ func runAppDaemon(app *App, err chan map[string]error) {
 
 func Daemon(apps ...*App) error {
 	if len(apps) < 2 {
-		panic(errors.New("Daemon precisa de pelo menos 2"))
+		panic(errors.New("Daemon precisa de pelo menos 2 apps"))
 	}
 	cErrs := make(chan map[string]error)
 	countErrors := map[string]int{}
@@ -25,6 +27,7 @@ func Daemon(apps ...*App) error {
 		if c > 0 {
 			app.DisableFileWatcher = true
 		}
+		app.Build()
 		go runAppDaemon(app, cErrs)
 	}
 

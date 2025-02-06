@@ -41,6 +41,7 @@ var (
 	env          string
 	port         string
 	address      string
+	listRoutes   bool
 	listRouteSch string
 )
 
@@ -48,6 +49,7 @@ func init() {
 	flag.StringVar(&env, "env", "", "set a address listener")
 	flag.StringVar(&port, "port", "", "set a address listener")
 	flag.StringVar(&address, "address", "", "set a address listener")
+	flag.BoolVar(&listRoutes, "routes", false, "list all routes")
 	flag.StringVar(&listRouteSch, "routeSch", "", "show routes schema-> app.route || app.route:GET")
 }
 
@@ -98,7 +100,10 @@ ENV funcs
 */
 
 func (app *App) setFlags() {
-	flag.Parse()
+	if !flag.Parsed() {
+		flag.Parse()
+	}
+
 	if e, ok := allowEnv[env]; env != "" && ok {
 		app.Env = e
 	}
@@ -122,6 +127,10 @@ func (app *App) setFlags() {
 		} else {
 			app.Srv.Addr = ":" + port
 		}
+	}
+
+	if listRoutes {
+		app.ShowRoutes()
 	}
 	if listRouteSch != "" {
 		showRouteSchema(app, listRouteSch)

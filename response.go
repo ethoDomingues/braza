@@ -122,18 +122,14 @@ func (r *Response) JSON(body any, code int) {
 	r.StatusCode = code
 	r.Headers.Set("Content-Type", "application/json")
 
-	switch body := body.(type) {
-	case string:
-		r.WriteString(body)
+	if b, ok := body.(string); ok {
+		r.WriteString(b)
 		panic(ErrHttpAbort)
-	case error:
-		r.WriteString(body.Error())
+	} else if b, ok := body.(error); ok {
+		r.WriteString(b.Error())
 		panic(ErrHttpAbort)
-	case fmt.Stringer:
-		r.WriteString(body.String())
-		panic(ErrHttpAbort)
-	case Jsonify:
-		j, err := json.Marshal(body.ToJson())
+	} else if b, ok := body.(Jsonify); ok {
+		j, err := json.Marshal(b.ToJson())
 		if err != nil {
 			panic(err)
 		}
@@ -146,6 +142,7 @@ func (r *Response) JSON(body any, code int) {
 		panic(err)
 	}
 	r.Write(j)
+
 	panic(ErrHttpAbort)
 }
 
