@@ -256,10 +256,10 @@ func (r *Request) UrlFor(name string, external bool, args ...string) string {
 
 func (r *Request) Ctx() *Ctx                          { return r.ctx }
 func (r *Request) Context() context.Context           { return r.raw.Context() }
+func (r *Request) Clone(ctx context.Context) *Request { return NewRequest(r.raw.Clone(ctx), r.ctx) }
 func (r *Request) UserAgent() string                  { return r.Header.Get("User-Agent") }
 func (r *Request) Referer() string                    { return r.Header.Get("Referer") }
-func (r *Request) RawRequest() *http.Request          { return r.raw }
-func (r *Request) Clone(ctx context.Context) *Request { return NewRequest(r.raw.Clone(ctx), r.ctx) }
+func (r *Request) HttpRequest() *http.Request         { return r.raw }
 func (r *Request) WithContext(ctx context.Context) *Request {
 	return NewRequest(r.raw.WithContext(ctx), r.ctx)
 }
