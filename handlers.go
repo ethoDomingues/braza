@@ -25,7 +25,7 @@ func serveFileHandler(ctx *Ctx) {
 		if ctype == "application/octet-stream" {
 			ctype = http.DetectContentType(ctx.Bytes())
 		}
-		ctx.Headers.Set("Content-Type", ctype)
+		ctx.header.Set("Content-Type", ctype)
 		ctx.Close()
 	} else {
 		if ctx.App.Env == "development" {
@@ -40,11 +40,11 @@ func optionsHandler(ctx *Ctx) {
 	mi := ctx.MatchInfo
 	rsp.StatusCode = 200
 	strMeths := strings.Join(mi.Route.Cors.AllowMethods, ", ")
-	if rsp.Headers.Get("Access-Control-Allow-Methods") == "" {
-		rsp.Headers.Set("Access-Control-Allow-Methods", strMeths)
+	if rsp.header.Get("Access-Control-Allow-Methods") == "" {
+		rsp.header.Set("Access-Control-Allow-Methods", strMeths)
 	}
 	rsp.parseHeaders()
-	rsp.Headers.Save(rsp.raw)
+	SetHeader(rsp.raw, rsp.header)
 }
 
 func execTeardown(ctx *Ctx) {
@@ -71,7 +71,7 @@ func reqOK(ctx *Ctx) {
 			rsp.SetCookie(ctx.Session.save(ctx))
 		}
 		rsp.parseHeaders()
-		rsp.Headers.Save(rsp.raw)
+		SetHeader(rsp.raw, rsp.header)
 	}
 	rsp.raw.WriteHeader(rsp.StatusCode)
 	fmt.Fprint(rsp.raw, rsp.String())

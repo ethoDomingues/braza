@@ -55,6 +55,10 @@ func init() {
 
 /*
 Create a new app with a default settings
+
+	app := NewApp(nil) // or NewApp(*braza.Config{})
+	...
+	app.Listen()
 */
 func NewApp(cfg *Config) *App {
 	dfn := ".env"
@@ -78,17 +82,62 @@ func NewApp(cfg *Config) *App {
 }
 
 type App struct {
+	// Main Router
 	*Router
+
+	// Main Config
 	*Config
 
-	BasicAuth     func(*Ctx) (user string, pass string, ok bool) // custom func to parse Authorization Header
-	AfterRequest, // exec after each request (if the application dont crash)
-	BeforeRequest, // exec before each request
-	TearDownRequest Func // exec after each request, after send to cleint ( this dont has effect in response)
+	/*
+		custom auth parser
+			app.BasicAuth = (ctx *braza.Ctx) {
+				a := ctx.Request.Header.Get("Authorization")
+				if a != ""{
+					...
+					return user,pass, true
+				}
+				return "","",false
+			}
+	*/
+	BasicAuth func(*Ctx) (user string, pass string, ok bool) // custom func to parse Authorization Header
+	/*
+		exec after each request (if the application dont crash)
+			app.AfterRequest = (ctx *braza.Ctx) {
+				h := ctx.Response.Header()
+				h.Set("X-Foo","Bar")
+				ctx.Response.SetHeader(h)
+				...
+			}
+	*/
+	AfterRequest Func
+
+	/*
+		exec before each request
+			app.BeforeRequest = (ctx *braza.Ctx) {
+				db := database.Open()
+				ctx.Global["db"] = db
+				user,pass,ok := ctx.Request.BasicAuth()
+				if ok {
+					ctx.Global["user"] = user
+				}
+			}
+	*/
+	BeforeRequest Func
+
+	/*
+		exec after close each conn ( this dont has effect in response)
+			app.TearDownRequest = (ctx *braza.Ctx) {
+				database.Close()
+				log.Print(...)
+				...
+			}
+	*/
+	TearDownRequest Func
 
 	routers      []*Router
 	routerByName map[string]*Router
 
+	// The Http.Server
 	Srv *http.Server
 
 	uuid  string
@@ -188,9 +237,7 @@ func (app *App) logStarterListener() {
 /*
 SERVER funcs
 */
-func (app *App) startListener(c chan error) {
-	c <- app.Srv.ListenAndServe()
-}
+func (app *App) startListener(c chan error) { c <- app.Srv.ListenAndServe() }
 
 func (app *App) startListenerTLS(privKey, pubKey string, c chan error) {
 	c <- app.Srv.ListenAndServeTLS(privKey, pubKey)
@@ -246,10 +293,10 @@ func runSrv(app *App, privKey, pubKey string, host ...string) (err error) {
 	}
 }
 
-func (app *App) Listen(host ...string) (err error) {
-	return runSrv(app, "", "", host...)
-}
+// Start Listener in http
+func (app *App) Listen(host ...string) (err error) { return runSrv(app, "", "", host...) }
 
+// Start Listener in https
 func (app *App) ListenTLS(certFile, certKey string, host ...string) (err error) {
 	return runSrv(app, certFile, certKey, host...)
 }
@@ -257,52 +304,6 @@ func (app *App) ListenTLS(certFile, certKey string, host ...string) (err error) 
 /*
 APP methods
 */
-
-/*
-Build the App, but not start serve
-
-example:
-
-	func index(ctx braza.Ctx){}
-
-	// it's work
-	func main() {
-		app := braza.NewApp()
-		app.GET("/",index)
-		app.Build(":5000")
-		app.UrlFor("index",true)
-	}
-	// it's don't work
-	func main() {
-		app := braza.NewApp()
-		app.GET("/",index)
-		app.UrlFor("index",true)
-	}
-*/
-func (app *App) Build(addr ...string) {
-	if app.built {
-		return
-	}
-	app.parseApp()
-	l = newLogger(app.LogFile)
-
-	var address string
-	if len(addr) > 0 {
-		a_ := addr[0]
-		if a_ != "" {
-			_, _, err := net.SplitHostPort(a_)
-			if err == nil {
-				address = a_
-			}
-		}
-	}
-
-	if strings.Contains(address, "0.0.0.0") {
-		listenAll = true
-	}
-	app.setFlags()
-	app.parseSrvApp(address)
-}
 
 // Parse the router and your routes
 func (app *App) parseApp() {
@@ -388,6 +389,23 @@ func (app *App) parseApp() {
 }
 
 /*
+Custom Http Error Handler
+
+	app.ErrorHandler(401,(ctx *braza.Ctx) {
+		ctx.HTML("Access denied",401)
+	})
+	app.ErrorHandler(404,(ctx *braza.Ctx) {
+		ctx.HTML("Hey boy, you're a little lost",404)
+	})
+*/
+func (app *App) ErrorHandler(statusCode int, f Func) {
+	if app.errHandlers == nil {
+		app.errHandlers = map[int]Func{}
+	}
+	app.errHandlers[statusCode] = f
+}
+
+/*
 Register Router in app
 
 	func main() {
@@ -414,11 +432,50 @@ func (app *App) Mount(routers ...*Router) {
 	}
 }
 
-func (app *App) ErrorHandler(statusCode int, f Func) {
-	if app.errHandlers == nil {
-		app.errHandlers = map[int]Func{}
+/*
+Build the App, but not start serve
+
+example:
+
+	func index(ctx braza.Ctx){}
+
+	// it's work
+	func main() {
+		app := braza.NewApp()
+		app.GET("/",index)
+		app.Build()
+		app.UrlFor("index",true)
 	}
-	app.errHandlers[statusCode] = f
+	// it's don't work
+	func main() {
+		app := braza.NewApp()
+		app.GET("/",index)
+		app.UrlFor("index",true)
+	}
+*/
+func (app *App) Build(addr ...string) {
+	if app.built {
+		return
+	}
+	app.parseApp()
+	l = newLogger(app.LogFile)
+
+	var address = ":5000"
+	if len(addr) > 0 {
+		a_ := addr[0]
+		if a_ != "" {
+			_, _, err := net.SplitHostPort(a_)
+			if err == nil {
+				address = a_
+			}
+		}
+	}
+
+	if strings.Contains(address, "0.0.0.0") {
+		listenAll = true
+	}
+	app.setFlags()
+	app.parseSrvApp(address)
 }
 
 /*
@@ -486,7 +543,7 @@ func (app *App) execHandlerError(ctx *Ctx, code int) {
 		ctx.StatusCode = code
 		statusText := http.StatusText(code)
 		body := fmt.Sprintf("%d %s", code, statusText)
-		ctx.Headers.Set("Content-Type", "text/plain")
+		ctx.header.Set("Content-Type", "text/plain")
 		ctx.WriteString(body)
 	}
 }
@@ -516,29 +573,21 @@ func (app *App) closeConn(ctx *Ctx) {
 	}
 }
 
-// # http.Handler
-func (app *App) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
-	ctx := NewCtx(app, wr, req)
-	defer app.closeConn(ctx)
-	app.execRoute(ctx)
-
-}
-
-// # Url Builder
+// Url Builder
 //
 //	app.GET("/users/{userID:int}", index)
 //
 //	app.UrlFor("index", false, "userID", "1"}) //  /users/1
-//	app.UrlFor("index", true, "userID", "1"}) // http://yourAddress/users/1
+//	app.UrlFor("index", true, "userID", "1"}) // http://servername/users/1
 func (app *App) UrlFor(name string, external bool, args ...string) string {
 	var (
 		host   = ""
 		route  *Route
 		router *Router
 	)
-	// if app.Srv == nil {
-	// 	l.err.Fatalf("you are trying to use this function outside of a context")
-	// }
+	if !app.built {
+		l.err.Fatalf("you are trying to use this function outside of a context")
+	}
 	if len(args)%2 != 0 {
 		l.err.Fatalf("numer of args of build url, is invalid: UrlFor only accept pairs of args ")
 	}
@@ -584,4 +633,12 @@ func (app *App) UrlFor(name string, external bool, args ...string) string {
 	}
 	url := route.mountURI(args...)
 	return host + url
+}
+
+// http.Handler
+func (app *App) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
+	ctx := NewCtx(app, wr, req)
+	defer app.closeConn(ctx)
+	app.execRoute(ctx)
+
 }

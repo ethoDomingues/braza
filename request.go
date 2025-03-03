@@ -58,7 +58,7 @@ func NewRequest(req *http.Request, ctx *Ctx) *Request {
 		Files:   map[string][]*File{},
 		Cookies: map[string]*http.Cookie{},
 
-		Header: Header(req.Header),
+		Header: req.Header,
 	}
 
 	if host, port, err := net.SplitHostPort(req.Host); err == nil {
@@ -76,7 +76,7 @@ type Request struct {
 	raw *http.Request
 
 	ctx    *Ctx
-	Header Header
+	Header http.Header
 
 	Body *bytes.Buffer
 	Method,
@@ -142,14 +142,6 @@ func (r *Request) parseCookies() {
 	}
 }
 
-func (r *Request) parseBody() {
-	r.Body.Grow(r.ContentLength)
-	r.Body.ReadFrom(r.raw.Body)
-	if !r.ctx.App.DisableParseFormBody {
-		r.ParseForm()
-	}
-}
-
 func (r *Request) ParseForm() {
 	if !r.formIsParsed {
 		ctx := r.ctx
@@ -190,6 +182,14 @@ func (r *Request) ParseForm() {
 			}
 		}
 		r.formIsParsed = true
+	}
+}
+
+func (r *Request) parseBody() {
+	r.Body.Grow(r.ContentLength)
+	r.Body.ReadFrom(r.raw.Body)
+	if !r.ctx.App.DisableParseFormBody {
+		r.ParseForm()
 	}
 }
 

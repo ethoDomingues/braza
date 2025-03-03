@@ -19,16 +19,28 @@ func (f Func) String() string {
 /*
 example:
 
-	type User struct{
-		Name string `braza:"name=name"`
-		Email string `braza:"name=username,in=auth"`    // name need be 'username'
-		Password string `braza:"name=password,in=auth"` // name need be 'password'
-		ProfilePhoto *braza.File `braza:"name=img,in=files"`
-		KeepConnected bool `braza:"name=keep,inquery"`
+	type Schema struct {
+		Bar int `braza:"in=args"`
+		File *braza.File `braza:"in=files"`
+		Files []*braza.File `braza:"in=files"`
+		XHeader string `braza:"in=headers"`
+		User string `braza:"in=auth,name=username"`
+		Pass string `braza:"in=auth,name=password"`
+		Limit int `braza:"in=query"` // /path/search?limit=1&offset=2
+		Offset int `braza:"in=query"` // /path/search?limit=1&offset=2
+
+		Text string `braza:"in=body"`
+		Text2 string  // deafult is 'in=body'.
+	}
+
+	Route{
+		Name:"foo",
+		Url:"/{bar:int}",
+		Schema: &Schema{},
 	}
 
 	func AnyHandler(ctx *braza.Ctx){
-		u, ok := ctx.Schema.(*User)
+		u := ctx.Schema.(*Schema)
 		...
 	}
 */
@@ -43,14 +55,66 @@ type Meth struct {
 type MapCtrl map[string]*Meth
 
 type Route struct {
-	Url  string
+	/*
+		# url patterns
+			""	//-> empty string is allowed
+			"/"	//-> index
+			"/batata"
+			"/{name}"	// match any string (ex: batata1234)
+			"/{id:int}"	// match on numbers (ex: 12345)
+			"/{path:*}"	|| "/{path:path}" // match anything
+	*/
+	Url string
+
+	// # Route Name
+	//	ctx.UrlFor("route Name"...
 	Name string
 
-	Func        Func
-	Cors        *Cors
-	Schema      Schema
-	MapCtrl     MapCtrl
-	Methods     []string
+	Func Func
+
+	/*
+		allow Cors on this route
+		&Cors{
+			AllowOrigins: []string{"example.com","www.example.com"},
+			AllowMethods: []string{"*","GET","POST"},
+			AllowHeaders: []string{"Authorization","*"},
+			ExposeHeaders: []string{"X-Header"},
+			AllowCredentials: true
+		}
+	*/
+	Cors *Cors
+
+	Schema Schema
+
+	/*
+		# a peculiar way of establishing routes
+			Route{
+				Name:"foo",
+				Url:"/foo",
+				MapCtrl: braza.MapCtrl{
+					"GET": &braza.Meth{
+						Func: Foo,
+						Schema: &SchemaFoo{}
+					},
+					"POST": &braza.Meth{
+						Func: Bar,
+						Schema: &SchemaBar{}
+					},
+					"DELETE": &braza.Meth{
+						Func: Xpto,
+						Schema: &SchemaXpto{}
+					},
+				},
+			}
+	*/
+	MapCtrl MapCtrl
+
+	// HTTP methods allowed on this route
+	//		[]string{"GET","POST","PATCH",...
+	Methods []string
+
+	// Func wiil exec before this route
+	//		[]Func{	GetUser, HasAUth,...
 	Middlewares []Func
 
 	parsed      bool

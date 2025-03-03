@@ -27,23 +27,24 @@ func NewResponse(wr http.ResponseWriter, ctx *Ctx) *Response {
 		Buffer:     bytes.NewBufferString(""),
 		raw:        wr,
 		ctx:        ctx,
-		Headers:    Header{},
+		header:     http.Header{},
 		StatusCode: 200,
 	}
 }
 
 type Response struct {
 	*bytes.Buffer
+	header     http.Header
 	StatusCode int
-	Headers    Header
 	ctx        *Ctx
 	raw        http.ResponseWriter
 }
 
-func (r Response) Header() http.Header            { return http.Header(r.Headers) }
+func (r Response) SetHeader(h http.Header)        { r.header = h }
+func (r Response) Header() http.Header            { return r.header }
 func (r Response) Write(b []byte) (int, error)    { return r.Buffer.Write(b) }
 func (r Response) WriteHeader(statusCode int)     { r.StatusCode = statusCode }
-func (r *Response) SetCookie(cookie *http.Cookie) { r.Headers.SetCookie(cookie) }
+func (r *Response) SetCookie(cookie *http.Cookie) { SetCookie(r.header, cookie) }
 func (r *Response) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	return r.raw.(http.Hijacker).Hijack()
 }
@@ -66,13 +67,13 @@ func (r *Response) parseHeaders() {
 	method := ctx.Request.Method
 	routerCors := ctx.MatchInfo.Router.Cors
 	if routerCors != nil {
-		routerCors.parse(r.Headers, ctx.Request)
+		routerCors.parse(r.header, ctx.Request)
 	}
 	routeCors := ctx.MatchInfo.Route.Cors
 
-	h := r.Headers
+	h := r.header
 	if routeCors != nil {
-		routeCors.parse(r.Headers, ctx.Request)
+		routeCors.parse(r.header, ctx.Request)
 	}
 	if routerCors != nil || routeCors != nil {
 		if _, ok := h["Access-Control-Request-Method"]; !ok {
@@ -109,10 +110,10 @@ func (r *Response) textCode(code int) {
 // Redirect to Following URL
 func (r *Response) Redirect(url string) {
 	r.Reset()
-	r.Headers.Set("Location", url)
+	r.header.Set("Location", url)
 	r.StatusCode = 302
 
-	r.Headers.Set("Content-Type", "text/html; charset=utf-8")
+	r.header.Set("Content-Type", "text/html; charset=utf-8")
 	r.WriteString("<a href=\"" + c3po.HtmlEscape(url) + "\"> Manual Redirect </a>.\n")
 	panic(ErrHttpAbort)
 }
@@ -120,7 +121,7 @@ func (r *Response) Redirect(url string) {
 func (r *Response) JSON(body any, code int) {
 	r.Reset()
 	r.StatusCode = code
-	r.Headers.Set("Content-Type", "application/json")
+	r.header.Set("Content-Type", "application/json")
 
 	if b, ok := body.(string); ok {
 		r.WriteString(b)
@@ -149,7 +150,7 @@ func (r *Response) JSON(body any, code int) {
 func (r *Response) TEXT(body any, code int) {
 	r.Reset()
 	r.StatusCode = code
-	r.Headers.Set("Content-Type", "text/plain")
+	r.header.Set("Content-Type", "text/plain")
 	r.writeAny(body)
 	panic(ErrHttpAbort)
 }
@@ -157,7 +158,7 @@ func (r *Response) TEXT(body any, code int) {
 func (r *Response) HTML(body any, code int) {
 	r.Reset()
 	r.StatusCode = code
-	r.Headers.Set("Content-Type", "text/html")
+	r.header.Set("Content-Type", "text/html")
 	r.writeAny(body)
 	panic(ErrHttpAbort)
 }
@@ -242,7 +243,7 @@ func (r *Response) ServeFile(pathToFile string) {
 		if ctype == "application/octet-stream" {
 			ctype = http.DetectContentType(ctx.Bytes())
 		}
-		ctx.Headers.Set("Content-Type", ctype)
+		ctx.header.Set("Content-Type", ctype)
 		ctx.Close()
 	}
 	if ctx.App.Env == "development" {

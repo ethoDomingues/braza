@@ -33,18 +33,105 @@ func NewCtx(app *App, wr http.ResponseWriter, rq *http.Request) *Ctx {
 }
 
 type Ctx struct {
-	App     *App           // Clone Current App
-	Global  map[string]any // global variables of current request
-	Session *Session       // Current Cookie Session
+	// Clone Current App
+	App *App
 
-	*Response          // Current Response
-	Request   *Request // Current Request
+	/*
+		global variables of current request
+			app.BeforeRequest = (ctx *braza.Ctx){
+				db := database.Open().Session()
+				ctx.Global["db"] = db
+				user := db.FindUser()
+				ctx.Global["user"] = user
 
-	// New Schema valid from route schema
+			}
+			func index(ctx *braza.Ctx){
+				db := ctx.Global["db"].(database.DB)
+				user := ctx.Global["user"].(*User)
+				...
+			}
+	*/
+	Global map[string]any
+
+	/*
+		Current Cookie Session
+		func login(ctx *braza.Ctx){
+				db := ctx.Global["db"].(database.DB)
+				username,pass,ok := ctx.Request.BasicAuth()
+				if ok{
+					user := &User{}
+					db.Where("username = ?",username).Find(user)
+					if user.CompareHashPass(pass){
+						ctx.Session.Set("user",user.id)
+					}
+				}
+				ctx.Unauthorized()
+			}
+	*/
+	Session *Session
+
+	/*
+		Current Response
+			func foo(ctx *braza.Ctx) {
+				ctx.JSON(map[string]any{
+					"foo":"bar",
+				}, 200)
+			}
+			func foo(ctx *braza.Ctx) {
+				ctx.HTML("<h1>Hello</h1>",200)
+			}
+			func foo(ctx *braza.Ctx) {
+				ctx.RenderTemplate("index.html")
+		  	}
+	*/
+	*Response
+
+	/*
+		Current Request
+	*/
+	Request *Request
+
+	/*
+		New Schema valid from route schema
+			Route{
+				Url:"/{foo}/{bar:int}"
+				Func: foo,
+				Schema: &Schema{}
+			}
+
+			type Schema struct {
+				Bar int `braza:"in=args"`
+				Foo string `braza:"in=args"`
+				File *braza.File `braza:"in=files"`
+				Files []*braza.File `braza:"in=files"`
+				XHeader string `braza:"in=headers"`
+				User string `braza:"in=auth,name=username"`
+				Pass string `braza:"in=auth,name=password"`
+				Limit int `braza:"in=query"` // /path/search?limit=1&offset=2
+				Offset int `braza:"in=query"` // /path/search?limit=1&offset=2
+
+				Text string `braza:"in=body"`
+				Text2 string  // deafult is 'in=body'.
+			}
+
+			func foo(ctx *braza.Ctx) {
+				sch := ctx.Schema.(*Schema)
+				...
+			}
+	*/
 	Schema        Schema
 	SchemaFielder *c3po.Fielder
 
-	// Contains information about the current request, route, etc...
+	/*
+		Contains information about the current request, route, etc...
+
+		Can only be accessed if there is a match. otherwise the values ​​will be null
+			func xpto(ctx *braza.Ctx) {
+				route := ctx.Matchinfo.Route
+				router := ctx.Matchinfo.Router
+				...
+			}
+	*/
 	MatchInfo *MatchInfo
 
 	mids       []Func

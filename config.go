@@ -32,6 +32,9 @@ func NewConfig() *Config                    { return &Config{} }
 func NewConfigFromFile(file string) *Config { c := &Config{}; c.SetupFromFile(file); return c }
 
 type Config struct {
+	/*
+
+	 */
 	Env            string // environmnt (default 'development')
 	SecretKey      string // for sign session (default '')
 	Servername     string // for build url routes and route match (default '')
