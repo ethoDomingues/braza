@@ -71,7 +71,7 @@ func (r *Router) parseRoute(route *Route) {
 	if r.Prefix != "" && !strings.HasPrefix(r.Prefix, "/") {
 		panic(fmt.Errorf("Router '%v' Prefix must start with slash or be a null string ", r.Name))
 	} else if route.Url != "" && (!strings.HasPrefix(route.Url, "/") && !strings.HasSuffix(r.Prefix, "/")) {
-		panic(fmt.Errorf("Route '%v' Prefix must start with slash or be a null String", r.Name))
+		panic(fmt.Errorf("Route '%v' Prefix must start with slash or be a null String", route.Name))
 	}
 
 	route.simpleUrl = route.Url

@@ -165,6 +165,8 @@ func getData(f *c3po.Fielder, rq *Request) (any, bool) {
 		return rq.Form[f.Name], false
 	case "path":
 		return rq.PathArgs[f.Name], false
+	case "subdomain":
+		return rq.PathArgs[f.Name], false
 	case "files":
 		return rq.Files[f.Name], true
 	case "headers":
