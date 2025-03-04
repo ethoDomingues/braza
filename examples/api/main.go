@@ -43,7 +43,7 @@ func post(ctx *braza.Ctx) {
 }
 
 func put(ctx *braza.Ctx) {
-	id := ctx.Request.Args["id"]
+	id := ctx.Request.PathArgs["id"]
 	item, ok := ctx.Request.Form["item"].(string)
 	if !ok && item == "" {
 		ctx.BadRequest()
@@ -57,7 +57,7 @@ func put(ctx *braza.Ctx) {
 }
 
 func del(ctx *braza.Ctx) {
-	id := ctx.Request.Args["id"]
+	id := ctx.Request.PathArgs["id"]
 	if _, ok := db[id]; ok {
 		delete(db, id)
 		ctx.NoContent()

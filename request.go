@@ -51,12 +51,12 @@ func NewRequest(req *http.Request, ctx *Ctx) *Request {
 
 		ContentLength: int(req.ContentLength),
 
-		Body:    bytes.NewBuffer(nil),
-		Args:    map[string]string{},
-		Mime:    map[string]string{},
-		Form:    map[string]any{},
-		Files:   map[string][]*File{},
-		Cookies: map[string]*http.Cookie{},
+		Body:     bytes.NewBuffer(nil),
+		PathArgs: map[string]string{},
+		Mime:     map[string]string{},
+		Form:     map[string]any{},
+		Files:    map[string][]*File{},
+		Cookies:  map[string]*http.Cookie{},
 
 		Header: req.Header,
 	}
@@ -89,15 +89,15 @@ type Request struct {
 
 	ContentLength int
 
-	URL     *url.URL
-	Host    string
-	Port    string
-	Form    map[string]any
-	Args    map[string]string
-	Mime    map[string]string
-	Query   url.Values
-	Files   map[string][]*File
-	Cookies map[string]*http.Cookie
+	URL      *url.URL
+	Host     string
+	Port     string
+	Form     map[string]any
+	PathArgs map[string]string
+	Mime     map[string]string
+	Query    url.Values
+	Files    map[string][]*File
+	Cookies  map[string]*http.Cookie
 
 	TransferEncoding []string
 
@@ -119,10 +119,10 @@ func (r *Request) parseHeaders() {
 	r.Mime = params
 	mi := r.ctx.MatchInfo
 	r.Query = r.URL.Query()
-	r.Args = re.getUrlValues(mi.Route.Url, r.URL.Path)
+	r.PathArgs = re.getUrlValues(mi.Route.Url, r.URL.Path)
 	if mi.Router.Subdomain != "" {
 		for k, w := range re.getSubdomainValues(mi.Router.Subdomain, r.URL.Host) {
-			r.Args[k] = w
+			r.PathArgs[k] = w
 		}
 	}
 
@@ -216,7 +216,7 @@ func (r *Request) parse() {
 func (r *Request) RequestURL() string {
 	route := r.ctx.MatchInfo.Route
 	args := []string{}
-	for k, v := range r.Args {
+	for k, v := range r.PathArgs {
 		args = append(args, k, v)
 	}
 	for k, v := range r.Query {

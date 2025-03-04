@@ -498,7 +498,7 @@ func (app *App) match(ctx *Ctx) {
 		if router.match(ctx) {
 			if router.StrictSlash && !strings.HasSuffix(rq.URL.Path, "/") {
 				args := []string{}
-				for k, v := range rq.Args {
+				for k, v := range rq.PathArgs {
 					args = append(args, k, v)
 				}
 				ctx.Response.Redirect(ctx.UrlFor(ctx.MatchInfo.Route.Name, true, args...))

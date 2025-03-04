@@ -12,7 +12,7 @@ import (
 func serveFileHandler(ctx *Ctx) {
 	rq := ctx.Request
 
-	urlFilePath := rq.Args["filepath"]
+	urlFilePath := rq.PathArgs["filepath"]
 	pathToFile := filepath.Join(ctx.App.StaticFolder, urlFilePath)
 	if f, err := os.Open(pathToFile); err == nil {
 		_, file := filepath.Split(pathToFile)

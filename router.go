@@ -22,7 +22,7 @@ type Router struct {
 	Name        string
 	Routes      []*Route
 	Prefix      string
-	Subdomain   string
+	Subdomain   string // only {sub} or {sub:int}
 	WsUpgrader  *websocket.Upgrader
 	Middlewares []Func
 	StrictSlash bool
