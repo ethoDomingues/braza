@@ -3,7 +3,6 @@ package braza
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"regexp"
 	"strings"
 )
@@ -76,10 +75,7 @@ func (r _re) getUrlValues(url, urlReq string) map[string]string {
 	req := strings.Split(urlReq, "/")
 	kv := map[string]string{}
 	urlSplit := strings.Split(url, "/")
-	rqSplit := strings.Split(urlReq, "/")
-	if len(urlSplit) != len(rqSplit) {
-		panic(fmt.Errorf("url unmatch with requestUrl. url: '%s' -- urlReq: '%s'", url, urlReq))
-	}
+
 	for i, str := range urlSplit {
 		if re.isVar.MatchString(str) {
 			varName := re.getVarName(str)
