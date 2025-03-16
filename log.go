@@ -7,6 +7,8 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+
+	"github.com/ethoDomingues/c3po"
 )
 
 const (
@@ -247,7 +249,18 @@ func showRouteSchema(app *App, routeName string) {
 	}
 	if r, ok := app.routesByName[rname]; ok {
 		if m, ok := r.MapCtrl[meth]; ok {
-			fmt.Println(m.SchemaFielder)
+			if m.SchemaFielder != nil {
+				fmt.Println("Request Schema:")
+				fmt.Println("\t", m.SchemaFielder)
+			}
+			if len(m.RespSchema) > 0 {
+				fmt.Println("Response Schema:")
+				for c, r := range m.RespSchema {
+					sch := c3po.ParseSchemaWithTag("braza", r)
+					fmt.Printf("%d: %s\n", c, sch)
+					fmt.Println()
+				}
+			}
 		}
 	}
 

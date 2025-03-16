@@ -12,9 +12,7 @@ import (
 
 type Func func(ctx *Ctx)
 
-func (f Func) String() string {
-	return "func(ctx *braza.Ctx)"
-}
+func (f Func) String() string { return "func(ctx *braza.Ctx)" }
 
 /*
 example:
@@ -46,9 +44,12 @@ example:
 */
 type Schema any
 
+type RespSchema map[int]any
+
 type Meth struct {
-	Func
-	Schema
+	Func          Func
+	Schema        Schema
+	RespSchema    RespSchema
 	SchemaFielder *c3po.Fielder
 }
 
@@ -57,12 +58,13 @@ type MapCtrl map[string]*Meth
 type Route struct {
 	/*
 		# url patterns
-			""	//-> empty string is allowed
-			"/"	//-> index
-			"/batata"
+			"" is same "/"
+			"/batata"	// match literal "/batata"
 			"/{name}"	// match any string (ex: batata1234)
 			"/{id:int}"	// match on numbers (ex: 12345)
 			"/{path:*}"	|| "/{path:path}" // match anything
+			"/{var1:int}/{var2}/{var3}" // is allowed
+			`/(\d+)` // regex work too
 	*/
 	Url string
 
@@ -84,7 +86,8 @@ type Route struct {
 	*/
 	Cors *Cors
 
-	Schema Schema
+	Schema     Schema
+	RespSchema RespSchema
 
 	/*
 		# a peculiar way of establishing routes
